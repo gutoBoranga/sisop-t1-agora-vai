@@ -32,4 +32,13 @@ typedef struct s_TCB {
 } TCB_t; 
 
 
+
+typedef struct s_SCHEDULER {
+  int executing;
+  PFILA2 able;
+  PFILA2 blocked;
+  int count;
+} SCHEDULER_t;
+
+
 #endif

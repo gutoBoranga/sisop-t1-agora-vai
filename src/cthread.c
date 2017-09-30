@@ -5,25 +5,18 @@
 #include <ucontext.h>
 #include <support.h>
 #include <cthread.h>
+#include <cdata.h>
 
 #define NAMES "Augusto Boranga\nLucas Assis\nOctávio Arruda\n"
 #define NAMES_SIZE 45
 #define ARGC 1
 
 #define MAIN_THREAD_TID 0
-#define CREATION_STATE 0
-#define ABLE_STATE 1
-#define EXECUTING_STATE 2
-#define BLOCKED_STATE 3
-#define DONE_STATE 4
 #define PRIORITY 0
 
-typedef struct s_TCB {  // isso deve ser definido aqui????
-  int tid;
-  int state;
-  int prio;
-  ucontext_t context;
-} TCB_t;
+
+
+SCHEDULER_t scheduler = {-1, NULL, NULL, 0};
 
 
 int cidentify (char *name, int size) {
@@ -47,30 +40,31 @@ int cidentify (char *name, int size) {
 
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
+
+  TCB_t *newThread;
+
+  newThread->state = PROCST_CRIACAO;
+  newThread->prio = PRIORITY;
+
   
-  
-  if (0) { // só pra ja deixar identado. aqui é se for a main
+  if (scheduler.count == 0) {
+    
     ucontext_t *newContext;
     getcontext(newContext);
     
-    TCB_t *mainThread;
-    mainThread->tid = MAIN_THREAD_TID;
-    mainThread->state = CREATION_STATE;
-    mainThread->prio = PRIORITY;
-    mainThread->context = *newContext;
+    newThread->tid = MAIN_THREAD_TID;
+    newThread->context = *newContext;
   }
   
   else {  // aqui é se for outra thread
     ucontext_t *newContext;
     makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
-    
-    TCB_t *newThread;
-    //newThread->tid = ultimo tid atribuido + 1
-    newThread->state = CREATION_STATE;
-    newThread->prio = PRIORITY;
+    newThread->tid = scheduler.count;
     newThread->context = *newContext;
   }
-  
+
+  scheduler.count++;
+  AppendFila2(scheduler.able, newThread);
   // coloca na fila de aptos
 
   
@@ -91,6 +85,8 @@ int csignal(csem_t *sem);
 int main() {
   
   //cidentify(NAMES, NAMES_SIZE);
-  
+
+  CreateFila2(scheduler.able);
+  printf("%d\n", scheduler.count);
   return 0;
 }
