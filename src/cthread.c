@@ -45,6 +45,8 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
+  
+  int tid = scheduler.count;
 
   
   if (scheduler.count == 0) {
@@ -59,7 +61,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   else {  // aqui é se for outra thread
     ucontext_t *newContext;
     makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
-    newThread->tid = scheduler.count;
+    newThread->tid = tid;
     newThread->context = *newContext;
   }
 
@@ -68,7 +70,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   // coloca na fila de aptos
 
   
-  return 0;
+  return tid;
 }
 
 
