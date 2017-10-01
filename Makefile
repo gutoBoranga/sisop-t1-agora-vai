@@ -13,11 +13,10 @@
 all: clean compile_to_object_file generate_static_library
 
 compile_to_object_file:
-	gcc -c src/cdata.c -o bin/cdata.o -I include
 	gcc -c src/cthread.c -I include -o bin/cthread.o
 
 generate_static_library:
-	ar crs lib/libcthread.a bin/cthread.o bin/support.o bin/cdata.o
+	ar crs lib/libcthread.a bin/cthread.o bin/support.o
 
 clean:
 	cp bin/support.o lib/
