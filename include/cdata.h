@@ -29,7 +29,20 @@ typedef struct s_TCB {
 	/* Se necessário, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! */
 	
 	
-} TCB_t; 
+} TCB_t;
+
+#define _XOPEN_SOURCE 600 // essa linha Ž s— pra funcionar no mac
+
+
+#define NAMES "Augusto Boranga\nLucas Assis\nOct‡vio Arruda\n"
+#define NAMES_SIZE 45
+#define ARGC 1  // funcoes sempre com um argumento (no max)
+
+#define MAIN_THREAD_TID 0 // tid da main Ž sempre 0
+#define PRIORITY 0 // prioridade Ž sempre 0
+
+#define ABLE_QUEUE 0  // codigo pra acessar a fila que quero listar
+#define BLOCKED_QUEUE 1
 
 
 #define STACK 64000

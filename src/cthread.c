@@ -1,19 +1,9 @@
-#define _XOPEN_SOURCE 600 // essa linha é só pra funcionar no mac
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ucontext.h>
 #include <support.h>
 #include <cthread.h>
 #include <cdata.h>
-
-#define NAMES "Augusto Boranga\nLucas Assis\nOctávio Arruda\n"
-#define NAMES_SIZE 45
-#define ARGC 1
-
-#define MAIN_THREAD_TID 0
-#define PRIORITY 0
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
@@ -33,6 +23,35 @@ void list_able() {
   else {
     printf("lista vazia ou invalida\n");
   }
+}
+
+void list_threads(int queue) {
+  
+  PFILA2 q;
+  TCB_t *current;
+  
+  if (queue == ABLE_QUEUE) {
+    q = scheduler->able;
+  }
+  
+  else {
+    q = scheduler->blocked;
+  }
+  
+  if (FirstFila2(q) == 0) {
+    
+    while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
+      current = (TCB_t*) GetAtIteratorFila2(q);
+      printf("tid: %d\n", current->tid);
+      NextFila2(q);
+    }
+  }
+  
+  else {
+    printf("lista vazia ou invalida\n");
+  }
+
+  FirstFila2(q);  // volta pro inicio da fila
 }
 	 
   
@@ -96,7 +115,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
     mainThread->context = *mainContext;
 
     
-    AppendFila2(scheduler->able, mainThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    AppendFila2(scheduler->able, mainThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (eu acho kkkkk)
     scheduler->count++;
   }
 
@@ -104,9 +123,12 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   TCB_t *newThread = malloc(sizeof(TCB_t));
   ucontext_t *newContext = malloc(sizeof(ucontext_t));
+  ucontext_t *currentContext = malloc(sizeof(ucontext_t));  // esse é o contexto atual
   
+  getcontext(currentContext);
   getcontext(newContext);
-  newContext->uc_link = scheduler->mainContext; // contexto a executar no términ
+  
+  newContext->uc_link = scheduler->currentContext; // contexto a executar no término
   newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
   newContext->uc_stack.ss_size = STACK; // tamanho da pilha
 
@@ -137,9 +159,9 @@ int csignal(csem_t *sem);
   *** Inicialização do semáforo ***
 */
 
-/*int csem_init(csem_t *sem, int count){
+int csem_init(csem_t *sem, int count){
 
-  PFILA2 pFilaSem;
+  PFILA2 pFilaSem = malloc(sizeof(PFILA2)); // PFILA é um ponteiro, entao tu tem que alocar o espaço dele antes
   CreateFila2 (pFilaSem); // Cria a fila para o semáforo
 
   sem = malloc(sizeof(csem_t));
