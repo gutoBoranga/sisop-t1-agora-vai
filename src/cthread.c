@@ -19,9 +19,20 @@ SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois
 
 void list_able() {
 
-  FirstFila2(scheduler->able); // iterador no primeiro elemento
-	TCB_t *thread = (TCB_t*) GetAtIteratorFila2(scheduler->able);
-  printf("tid: %d\n", thread->tid);
+  TCB_t *current;
+
+  if (FirstFila2(scheduler->able) == 0) {
+
+    while (GetAtIteratorFila2(scheduler->able) != NULL) { // iterador no primeiro elemento
+      current = (TCB_t*) GetAtIteratorFila2(scheduler->able);
+      printf("tid: %d\n", current->tid);
+      NextFila2(scheduler->able);
+    }
+  }
+
+  else {
+    printf("lista vazia ou invalida\n");
+  }
 }
 	 
   
@@ -38,10 +49,6 @@ int csched_init() {
     CreateFila2(scheduler->blocked); 
     scheduler->count = 0; // ninguem escalonado ainda
 
-	TCB_t *thread;
-	thread = malloc(sizeof(TCB_t));
-	thread->tid = 99;
-	AppendFila2(scheduler->able, thread);
     return 0;    
   }
 
@@ -72,40 +79,48 @@ int cidentify (char *name, int size) {
 
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
+  
+  if (scheduler->count == 0) { // aqui cria a thread da main
 
-  TCB_t *newThread;
-  newThread = malloc(sizeof(TCB_t));
+    ucontext_t *mainContext = malloc(sizeof(ucontext_t));
+    TCB_t *mainThread;
+    
+    mainThread = malloc(sizeof(TCB_t));
+    
+    getcontext(mainContext);
+    scheduler->mainContext = mainContext;
+
+    mainThread->state = PROCST_CRIACAO;
+    mainThread->prio = PRIORITY;
+    mainThread->tid = MAIN_THREAD_TID;
+    mainThread->context = *mainContext;
+
+    
+    AppendFila2(scheduler->able, mainThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    scheduler->count++;
+  }
+
+  // aqui é a nova thread
+
+  TCB_t *newThread = malloc(sizeof(TCB_t));
+  ucontext_t *newContext = malloc(sizeof(ucontext_t));
+  
+  getcontext(newContext);
+  newContext->uc_link = scheduler->mainContext; // contexto a executar no términ
+  newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
+  newContext->uc_stack.ss_size = STACK; // tamanho da pilha
+
+  makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
 
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
+  newThread->tid = scheduler->count;
+  newThread->context = *newContext;
 
-  int tid = scheduler->count;
-
-
-  if (scheduler->count == 0) {
-
-    ucontext_t *newContext;
-    getcontext(newContext);
-
-    newThread->tid = MAIN_THREAD_TID;
-    newThread->context = *newContext;
-  }
-
-  else {  // aqui é se for outra thread
-    ucontext_t *newContext;
-    makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
-    newThread->tid = tid;
-    newThread->context = *newContext;
-  }
-
+  AppendFila2(scheduler->able, newThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   scheduler->count++;
-	printf("vai bugar no append\n");
-	AppendFila2(scheduler->able, newThread);  
-list_able();
-  // coloca na fila de aptos
-
-
-  return tid;
+  
+  return newThread->tid;
 }
 
 

@@ -32,8 +32,10 @@ typedef struct s_TCB {
 } TCB_t; 
 
 
+#define STACK 64000
 
 typedef struct s_SCHEDULER {
+  ucontext_t *mainContext;
   int executing;
   PFILA2 able;
   PFILA2 blocked;
