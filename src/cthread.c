@@ -2,6 +2,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ucontext.h>
 #include <support.h>
 #include <cthread.h>
@@ -16,7 +17,24 @@
 
 
 
-SCHEDULER_t scheduler = {-1, NULL, NULL, 0};
+
+SCHEDULER_t *scheduler;
+
+int csched_init(SCHEDULER_t *scheduler) {
+
+  scheduler = malloc(sizeof(scheduler));
+
+  if (scheduler) {
+    scheduler->executing = -1; // ninguem executando
+    CreateFila2(scheduler->able); // filas vazias
+    CreateFila2(scheduler->blocked); 
+    scheduler->count = 0; // ninguem escalonado ainda
+  }
+
+  else {
+    return 1;
+  }
+}
 
 
 int cidentify (char *name, int size) {
@@ -46,10 +64,10 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
 
-  int tid = scheduler.count;
+  int tid = scheduler->count;
 
 
-  if (scheduler.count == 0) {
+  if (scheduler->count == 0) {
 
     ucontext_t *newContext;
     getcontext(newContext);
@@ -65,8 +83,8 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
     newThread->context = *newContext;
   }
 
-  scheduler.count++;
-  AppendFila2(scheduler.able, newThread);
+  scheduler->count++;
+  AppendFila2(scheduler->able, newThread);
   // coloca na fila de aptos
 
 
@@ -87,15 +105,15 @@ int csignal(csem_t *sem);
   *** Inicialização do semáforo ***
 */
 
-int csem_init(csem_t *sem, int count){
+/*int csem_init(csem_t *sem, int count){
 
-  PFILA2 pfilaSem;
-  CreateFila2 (PFILA2 pFilaSem); // Cria a fila para o semáforo
+  PFILA2 pFilaSem;
+  CreateFila2 (pFilaSem); // Cria a fila para o semáforo
 
   sem = malloc(sizeof(csem_t));
 
   sem->count = 1; //semáforo começa livre
-  sem->fila = pfilaSem;
+  sem->fila = pFilaSem;
 
   if(check_malloc(sizeof(sem)) == NULL){ // retorna null quando houve erro
     return -1;
@@ -106,11 +124,3 @@ int csem_init(csem_t *sem, int count){
 
 /* Fim da edição */
 
-int main() {
-
-  //cidentify(NAMES, NAMES_SIZE);
-
-  CreateFila2(scheduler.able);
-  printf("%d\n", scheduler.count);
-  return 0;
-}

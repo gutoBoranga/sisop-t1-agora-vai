@@ -25,5 +25,5 @@ clean:
 	rm -rf lib/*
 
 test:
-	 gcc testes/main.c -I include -L lib -lcthread -o testes/main
+	gcc testes/main.c -I include -L lib -lcthread -o testes/main
 	./testes/main
