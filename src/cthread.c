@@ -20,7 +20,8 @@ SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois
 void list_able() {
 
   FirstFila2(scheduler->able); // iterador no primeiro elemento
-  printf("tid: %d\n", GetAtIteratorFila2(scheduler->able)->tid);
+	TCB_t *thread = (TCB_t*) GetAtIteratorFila2(scheduler->able);
+  printf("tid: %d\n", thread->tid);
 }
 	 
   
@@ -37,14 +38,11 @@ int csched_init() {
     CreateFila2(scheduler->blocked); 
     scheduler->count = 0; // ninguem escalonado ainda
 
-
-    TCB_t *newThread;
-
-    newThread->state = PROCST_CRIACAO;
-    newThread->prio = PRIORITY;
-    newThread->tid = 55;
-    
-    AppendFila2(scheduler->able, newThread);
+	TCB_t *thread;
+	thread = malloc(sizeof(TCB_t));
+	thread->tid = 99;
+	AppendFila2(scheduler->able, thread);
+    return 0;    
   }
 
   else {
@@ -76,6 +74,7 @@ int cidentify (char *name, int size) {
 int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   TCB_t *newThread;
+  newThread = malloc(sizeof(TCB_t));
 
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
@@ -100,7 +99,9 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   }
 
   scheduler->count++;
-  AppendFila2(scheduler->able, newThread);
+	printf("vai bugar no append\n");
+	AppendFila2(scheduler->able, newThread);  
+list_able();
   // coloca na fila de aptos
 
 
