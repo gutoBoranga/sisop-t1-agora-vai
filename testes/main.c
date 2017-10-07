@@ -5,7 +5,8 @@ int main() {
 
   SCHEDULER_t *sched;
 
-  int i = csched_init(sched);
+  csched_init(sched);
+  list_able();
   
   return 0;
 }

@@ -15,20 +15,36 @@
 #define MAIN_THREAD_TID 0
 #define PRIORITY 0
 
+SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
+void list_able() {
 
+  FirstFila2(scheduler->able); // iterador no primeiro elemento
+  printf("tid: %d\n", GetAtIteratorFila2(scheduler->able)->tid);
+}
+	 
+  
 
-SCHEDULER_t *scheduler;
+int csched_init() {
 
-int csched_init(SCHEDULER_t *scheduler) {
-
-  scheduler = malloc(sizeof(scheduler));
-
+  scheduler = malloc(sizeof(SCHEDULER_t));
+  scheduler->able = malloc(sizeof(PFILA2));
+  scheduler->blocked = malloc(sizeof(PFILA2));
+  
   if (scheduler) {
     scheduler->executing = -1; // ninguem executando
     CreateFila2(scheduler->able); // filas vazias
     CreateFila2(scheduler->blocked); 
     scheduler->count = 0; // ninguem escalonado ainda
+
+
+    TCB_t *newThread;
+
+    newThread->state = PROCST_CRIACAO;
+    newThread->prio = PRIORITY;
+    newThread->tid = 55;
+    
+    AppendFila2(scheduler->able, newThread);
   }
 
   else {
