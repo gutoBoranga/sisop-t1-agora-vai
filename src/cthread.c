@@ -26,49 +26,49 @@ void list_able() {
 }
 
 void list_threads(int queue) {
-  
+
   PFILA2 q;
   TCB_t *current;
-  
+
   if (queue == ABLE_QUEUE) {
     q = scheduler->able;
   }
-  
+
   else {
     q = scheduler->blocked;
   }
-  
+
   if (FirstFila2(q) == 0) {
-    
+
     while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
       current = (TCB_t*) GetAtIteratorFila2(q);
       printf("tid: %d\n", current->tid);
       NextFila2(q);
     }
   }
-  
+
   else {
     printf("lista vazia ou invalida\n");
   }
 
   FirstFila2(q);  // volta pro inicio da fila
 }
-	 
-  
+
+
 
 int csched_init() {
 
   scheduler = malloc(sizeof(SCHEDULER_t));
   scheduler->able = malloc(sizeof(PFILA2));
   scheduler->blocked = malloc(sizeof(PFILA2));
-  
+
   if (scheduler) {
     scheduler->executing = -1; // ninguem executando
     CreateFila2(scheduler->able); // filas vazias
-    CreateFila2(scheduler->blocked); 
+    CreateFila2(scheduler->blocked);
     scheduler->count = 0; // ninguem escalonado ainda
 
-    return 0;    
+    return 0;
   }
 
   else {
@@ -98,18 +98,18 @@ int cidentify (char *name, int size) {
 
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
-  
+
   if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
     csched_init();
   }
-  
+
   if (scheduler->count == 0) { // aqui cria a thread da main
 
     ucontext_t *mainContext = malloc(sizeof(ucontext_t));
     TCB_t *mainThread;
-    
+
     mainThread = malloc(sizeof(TCB_t));
-    
+
     getcontext(mainContext);
     scheduler->mainContext = mainContext;
 
@@ -118,7 +118,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
     mainThread->tid = MAIN_THREAD_TID;
     mainThread->context = *mainContext;
 
-    
+
     AppendFila2(scheduler->able, mainThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (eu acho kkkkk)
     scheduler->count++;
   }
@@ -128,10 +128,10 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   TCB_t *newThread = malloc(sizeof(TCB_t));
   ucontext_t *newContext = malloc(sizeof(ucontext_t));
   ucontext_t *currentContext = malloc(sizeof(ucontext_t));  // esse é o contexto atual
-  
+
   getcontext(currentContext);
   getcontext(newContext);
-  
+
   newContext->uc_link = scheduler->currentContext; // contexto a executar no término
   newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
   newContext->uc_stack.ss_size = STACK; // tamanho da pilha
@@ -145,7 +145,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   AppendFila2(scheduler->able, newThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   scheduler->count++;
-  
+
   return newThread->tid;
 }
 
@@ -180,5 +180,64 @@ int csem_init(csem_t *sem, int count){
 
 }
 
-/* Fim da edição */
+  // *** Sincronização de Término ***
 
+int cjoin(int tid){
+  /* A filaWaited e a filaBloqueados deve ser criado em outro local...
+  Além disso, a filaBloqueados deverá desbloquear a thread bloqueada via
+  cjoin aqui mesmo. */
+  PFILA2 filaWaited = malloc(sizeof(PFILA2));
+  CreateFila2 (filaWaited);
+
+  // testar se a tid passada existe(e está executando)
+  if(tid == NULL){
+    return -1; // qual seria o código de erro?
+  }
+  else {
+    if (FirstFila2(filaWaited) != tid){
+
+        while(GetAtIteratorFila2(filaWaited) != tid)) { /* Iteração sobre a fila
+          de "Esperados" até terminarem. */
+          NextFila2(filaWaited);
+        }
+
+        if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,
+          quem chamou cjoin nesta tid deverá continuar executando normalmente. */
+          return -1;
+        }
+
+        /* Se tid não está na fila, ele deve ser adicionado, e a thread que
+        chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
+        passada como argumento. */
+        tid = malloc(sizeof(sFilaNode2));
+        AppendFila2(filaWaited, void *tid); /* não sei se pode ser só "tid", na support.pdf
+         diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
+        novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
+
+        /* FALTA: criar um sistema que quando a thread esperada(que está na filaWaited)
+        acabe, a thread bloqueada(que chamou) seja desbloqueada. Além disso, deve ser
+        feito um free no nodo que estava na filaWaited, e na thread bloqueada que
+        estava na fila bloqueada.
+        */
+
+        return 0;
+    }
+    else return -1;
+
+    /* É necessário um mecanismo para que as threads que estão sendo executadas
+    e que queiram fazer cjoin sejam inseridas em uma estrutura de dado, podendo
+    ser uma fila qualquer, de modo que um if's possamser checados:
+    1:  se a thread que fez cjoin já não fez cjoin antes(não é permitido
+     realizar duas chamadas de cjoin, nem para a mesma thread, nem para uma
+     diferente (ou seja, não se pode esperar mais de uma thread, mesmo que
+     a chamada de cjoin seja para a mesma thread feito antes)
+        senão, pode fazer cjoin, e na própria função de cjoin será checado se
+        a tid passada como argumento já não está sendo esperada ou não existe,
+        caso a resposta para essas duas perguntas seja não, a thread que fez
+        cjoin para a tid x, entrará para o estado bloqueado até que x conclua
+        seu trabalho.
+    */
+  }
+
+
+/* Fim da edição */
