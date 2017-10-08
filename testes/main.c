@@ -8,7 +8,6 @@ void teste(void) {
 int main() {
 
 
-  csched_init();
   printf("cshched_init ok\n");
   void *(*fPointer)(void *) = &teste;
   void *x;

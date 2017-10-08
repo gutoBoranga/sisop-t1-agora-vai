@@ -99,6 +99,10 @@ int cidentify (char *name, int size) {
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
   
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
+    csched_init();
+  }
+  
   if (scheduler->count == 0) { // aqui cria a thread da main
 
     ucontext_t *mainContext = malloc(sizeof(ucontext_t));
