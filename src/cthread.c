@@ -200,7 +200,7 @@ int cjoin(int tid){
         while(GetAtIteratorFila2(filaWaited) != tid) { /* Iteração sobre a fila
           de "Esperados" até terminarem. */
 
-          if (&GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
+          if (&(GetAtIteratorFila2(filaWaited)) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
             quem chamou cjoin nesta tid deverá continuar executando normalmente. */
             return -1;
           }
