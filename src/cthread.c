@@ -211,9 +211,9 @@ int cjoin(int tid){
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
       novoTid = malloc(sizeof(sFilaNode2));
-      novoTid.dado = tid;
-      novoTid.ant = NULL;
-      novoTid.next = NULL;
+      novoTid->node = (void*)tid;
+      novoTid->ant = NULL;
+      novoTid->next = NULL;
       AppendFila2(filaWaited, novoTid); /* não sei se pode ser só "tid", na support.pdf
       diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
       novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
