@@ -212,9 +212,9 @@ int cjoin(int tid){
       passada como argumento. */
       sFilaNode2 novoTid;
       novoTid = malloc(sizeof(NODE2));
-      novoTid.ant = NULL;
-      novoTid.next = NULL;
-      novoTid.node = tid;
+      novoTid->ant = (void*)NULL;
+      novoTid->next = (void*)NULL;
+      novoTid->node = (int*)tid;
       AppendFila2(filaWaited, novoTid); /* não sei se pode ser só "tid", na support.pdf
       diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
       novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
