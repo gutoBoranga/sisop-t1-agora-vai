@@ -197,10 +197,10 @@ int cjoin(int tid){
     if (FirstFila2(filaWaited) != tid){ /* testar se a thread da tid não está
       sendo esperada por nenhuma outra thread */
 
-        while((int*)GetAtIteratorFila2(filaWaited) != tid) { /* Iteração sobre a fila
+        while((int*)&GetAtIteratorFila2(filaWaited) != tid) { /* Iteração sobre a fila
           de "Esperados" até terminarem. */
 
-          if ((int*)GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
+          if ((int*)&GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
             quem chamou cjoin nesta tid deverá continuar executando normalmente. */
             return -1;
           }
