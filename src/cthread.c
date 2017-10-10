@@ -187,6 +187,7 @@ int cjoin(int tid){
   PFILA2 filaWaited = malloc(sizeof(PFILA2));
   CreateFila2 (filaWaited);
 
+  sFilaNode2 novoTid;
   novoTid = malloc(sizeof(NODE2));
   novoTid->ant = NULL; novoTid->next = NULL;
   novoTid->node = tid;
