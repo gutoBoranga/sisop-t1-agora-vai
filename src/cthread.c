@@ -223,7 +223,7 @@ int cjoin(int tid){
         */
       return 0;
     }
-    else return -1;
+    return -1;
 
     /* É necessário um mecanismo para que as threads que estão sendo executadas
     e que queiram fazer cjoin sejam inseridas em uma estrutura de dado, podendo
