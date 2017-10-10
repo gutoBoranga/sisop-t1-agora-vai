@@ -186,6 +186,7 @@ int cjoin(int tid){
   cjoin aqui mesmo. */
   PFILA2 filaWaited = malloc(sizeof(PFILA2));
   CreateFila2 (filaWaited);
+  novoTid = malloc(sizeof(sFilaNode2));
 
   // testar se a tid passada existe(e está executando)
   if(tid < 0){
@@ -210,7 +211,6 @@ int cjoin(int tid){
       /* Se tid não está na fila, ele deve ser adicionado, e a thread que
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
-      novoTid = malloc(sizeof(sFilaNode2));
       novoTid->node = (void*)tid;
       novoTid->ant = NULL;
       novoTid->next = NULL;
