@@ -171,7 +171,7 @@ int csem_init(csem_t *sem, int count){
   sem->fila = pFilaSem;
 
   sucesso = check_malloc(sizeof(sem));
-  if(sucesso){ // não é nulo
+  if(sucesso){ // não é nulo, sucesso
     return 0;
   } // erro
   else return -1;
@@ -188,38 +188,40 @@ int cjoin(int tid){
   CreateFila2 (filaWaited);
 
   // testar se a tid passada existe(e está executando)
-  if(tid == NULL){
-    return -1; // qual seria o código de erro?
+  if(tid < 0){
+    return -1; // tid menor que zero não existe, erro
   }
-  else {
-    if (FirstFila2(filaWaited) != tid){
+  else { // caso seja >=0, tid existe
+
+    if (FirstFila2(filaWaited) != tid){ /* testar se a thread da tid não está
+      sendo esperada por nenhuma outra thread */
 
         while(GetAtIteratorFila2(filaWaited) != tid)) { /* Iteração sobre a fila
           de "Esperados" até terminarem. */
+
+          if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,
+            quem chamou cjoin nesta tid deverá continuar executando normalmente. */
+            return -1;
+          }
+
           NextFila2(filaWaited);
         }
-
-        if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,
-          quem chamou cjoin nesta tid deverá continuar executando normalmente. */
-          return -1;
-        }
-
-        /* Se tid não está na fila, ele deve ser adicionado, e a thread que
-        chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
-        passada como argumento. */
-        sFilaNode2 = novoTid;
-        novoTid.dado = tid;
-        AppendFila2(filaWaited, void *novoTid); /* não sei se pode ser só "tid", na support.pdf
-         diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
-        novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
+      }
+      /* Se tid não está na fila, ele deve ser adicionado, e a thread que
+      chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
+      passada como argumento. */
+      sFilaNode2 = novoTid;
+      novoTid.dado = tid;
+      AppendFila2(filaWaited, void *novoTid); /* não sei se pode ser só "tid", na support.pdf
+      diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
+      novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
 
         /* FALTA: criar um sistema que quando a thread esperada(que está na filaWaited)
         acabe, a thread bloqueada(que chamou) seja desbloqueada. Além disso, deve ser
         feito um free no nodo que estava na filaWaited, e na thread bloqueada que
         estava na fila bloqueada.
         */
-
-        return 0;
+      return 0;
     }
     else return -1;
 
