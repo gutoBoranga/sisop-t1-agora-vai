@@ -187,11 +187,6 @@ int cjoin(int tid){
   PFILA2 filaWaited = malloc(sizeof(PFILA2));
   CreateFila2 (filaWaited);
 
-  sFilaNode2 novoTid;
-  novoTid = malloc(sizeof(NODE2));
-  novoTid->ant = NULL; novoTid->next = NULL;
-  novoTid->node = tid;
-
   // testar se a tid passada existe(e está executando)
   if(tid < 0){
     return -1; // tid menor que zero não existe, erro
@@ -215,6 +210,11 @@ int cjoin(int tid){
       /* Se tid não está na fila, ele deve ser adicionado, e a thread que
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
+      sFilaNode2 novoTid;
+      novoTid = malloc(sizeof(NODE2));
+      novoTid->ant = NULL;
+      novoTid->next = NULL;
+      novoTid->node = *tid;
       AppendFila2(filaWaited, novoTid); /* não sei se pode ser só "tid", na support.pdf
       diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
       novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
