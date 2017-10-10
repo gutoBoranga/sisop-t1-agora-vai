@@ -186,7 +186,7 @@ int cjoin(int tid){
   cjoin aqui mesmo. */
   PFILA2 filaWaited = malloc(sizeof(PFILA2));
   CreateFila2 (filaWaited);
-  novoTid = malloc(sizeof(sFilaNode2));
+  novoTid = malloc(sizeof(NODE2));
 
   // testar se a tid passada existe(e está executando)
   if(tid < 0){
@@ -200,7 +200,7 @@ int cjoin(int tid){
         while(GetAtIteratorFila2(filaWaited) != tid) { /* Iteração sobre a fila
           de "Esperados" até terminarem. */
 
-          if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
+          if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER
             quem chamou cjoin nesta tid deverá continuar executando normalmente. */
             return -1;
           }
