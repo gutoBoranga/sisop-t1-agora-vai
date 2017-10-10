@@ -14,9 +14,8 @@ int main() {
   ccreate(fPointer, x, 0);
   ccreate(fPointer, x, 0);
   printf("ccreate ok\n");
-  list_able();
+  list_threads(ABLE_QUEUE);
   printf("list_able ok\n");
 
   return 0;
 }
-

@@ -165,26 +165,24 @@ int csignal(csem_t *sem);
 
 int csem_init(csem_t *sem, int count){
 
-  PFILA2 pFilaSem = malloc(sizeof(PFILA2)); // PFILA é um ponteiro, entao tu tem que alocar o espaço dele antes
-  CreateFila2 (pFilaSem); // Cria a fila para o semáforo
-
   sem = malloc(sizeof(csem_t));
 
   sem->count = 1; //semáforo começa livre
   sem->fila = pFilaSem;
 
-  if(check_malloc(sizeof(sem)) == NULL){ // retorna null quando houve erro
-    return -1;
-  } // se não houve erro, a região foi alocada corretamente
-  else return 0;
-
+  sucesso = check_malloc(sizeof(sem));
+  if(sucesso){ // não é nulo
+    return 0;
+  } // erro
+  else return -1;
 }
 
   // *** Sincronização de Término ***
 
 int cjoin(int tid){
-  /* A filaWaited e a filaBloqueados deve ser criado em outro local...
-  Além disso, a filaBloqueados deverá desbloquear a thread bloqueada via
+  /* A filaWaited e a filaBloqueados(é a fila do semáforo!!!!!!!!!!!)
+   deve ser criado em outro local...
+  Além disso, a fila do semáforo deverá desbloquear a thread bloqueada via
   cjoin aqui mesmo. */
   PFILA2 filaWaited = malloc(sizeof(PFILA2));
   CreateFila2 (filaWaited);
@@ -209,8 +207,9 @@ int cjoin(int tid){
         /* Se tid não está na fila, ele deve ser adicionado, e a thread que
         chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
         passada como argumento. */
-        tid = malloc(sizeof(sFilaNode2));
-        AppendFila2(filaWaited, void *tid); /* não sei se pode ser só "tid", na support.pdf
+        sFilaNode2 = novoTid;
+        novoTid.dado = tid;
+        AppendFila2(filaWaited, void *novoTid); /* não sei se pode ser só "tid", na support.pdf
          diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
         novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
 

@@ -1,9 +1,9 @@
 /*
- * cdata.h: arquivo de inclusão de uso apenas na geração da libpithread
+ * cdata.h: arquivo de inclusï¿½o de uso apenas na geraï¿½ï¿½o da libpithread
  *
  * Esse arquivo pode ser modificado. ENTRETANTO, deve ser utilizada a TCB fornecida
  *
- * Versão de 11/09/2017
+ * Versï¿½o de 11/09/2017
  *
  */
 #ifndef __cdata__
@@ -17,29 +17,34 @@
 #define	PROCST_TERMINO	4
 
 /* Os campos "tid", "state", "prio" e "context" dessa estrutura devem ser mantidos e usados convenientemente
-   Pode-se acrescentar outros campos APÓS os campos obrigatórios dessa estrutura
+   Pode-se acrescentar outros campos APï¿½S os campos obrigatï¿½rios dessa estrutura
 */
-typedef struct s_TCB { 
+typedef struct s_TCB {
 	int		tid; 		// identificador da thread
 	int		state;		// estado em que a thread se encontra
-					// 0: Criação; 1: Apto; 2: Execução; 3: Bloqueado e 4: Término
+					// 0: Criaï¿½ï¿½o; 1: Apto; 2: Execuï¿½ï¿½o; 3: Bloqueado e 4: Tï¿½rmino
 	unsigned 	int		prio;		// prioridade da thread (higest=0; lowest=3)
-	ucontext_t 	context;	// contexto de execução da thread (SP, PC, GPRs e recursos) 
-	
-	/* Se necessário, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! */
-	
-	
+	ucontext_t 	context;	// contexto de execuï¿½ï¿½o da thread (SP, PC, GPRs e recursos)
+
+	/* Se necessï¿½rio, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! */
+
+
 } TCB_t;
 
-#define _XOPEN_SOURCE 600 // essa linha Ž s— pra funcionar no mac
+typedef struct s_semÂ {Â 
+int count;Â Â  //Â indicaÂ seÂ recursoÂ estÃ¡Â ocupadoÂ ouÂ nÃ£oÂ (livreÂ >Â 0,Â ocupadoÂ â‰¤Â 0)Â 
+PFILA2 fila; //Â ponteiroÂ paraÂ umaÂ filaÂ deÂ threadsÂ bloqueadasÂ noÂ semÃ¡foro.Â 
+}Â csem_t;Â 
+
+#define _XOPEN_SOURCE 600 // essa linha ï¿½ sï¿½ pra funcionar no mac
 
 
-#define NAMES "Augusto Boranga\nLucas Assis\nOct‡vio Arruda\n"
+#define NAMES "Augusto Boranga\nLucas Assis\nOctï¿½vio Arruda\n"
 #define NAMES_SIZE 45
 #define ARGC 1  // funcoes sempre com um argumento (no max)
 
-#define MAIN_THREAD_TID 0 // tid da main Ž sempre 0
-#define PRIORITY 0 // prioridade Ž sempre 0
+#define MAIN_THREAD_TID 0 // tid da main ï¿½ sempre 0
+#define PRIORITY 0 // prioridade ï¿½ sempre 0
 
 #define ABLE_QUEUE 0  // codigo pra acessar a fila que quero listar
 #define BLOCKED_QUEUE 1
@@ -54,6 +59,5 @@ typedef struct s_SCHEDULER {
   PFILA2 blocked;
   int count;
 } SCHEDULER_t;
-
 
 #endif
