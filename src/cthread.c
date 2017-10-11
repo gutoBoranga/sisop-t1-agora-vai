@@ -154,7 +154,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   getcontext(currentContext);
   getcontext(newContext);
 
-  newContext->uc_link = scheduler->currentContext; // contexto a executar no término
+  newContext->uc_link = scheduler; // contexto a executar no término
   newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
   newContext->uc_stack.ss_size = STACK; // tamanho da pilha
 
