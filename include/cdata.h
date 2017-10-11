@@ -57,11 +57,6 @@ PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáfo
 
 #define STACK 64000
 
-typedef struct s_sem {
-	int	count;	// indica se recurso est� ocupado ou n�o (livre > 0, ocupado = 0)
-	PFILA2	fila; 	// ponteiro para uma fila de threads bloqueadas no sem�foro
-} csem_t;
-
 typedef struct s_SCHEDULER {
   ucontext_t *mainContext;
   int executing;
