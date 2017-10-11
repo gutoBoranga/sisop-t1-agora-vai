@@ -189,8 +189,8 @@ int csem_init(csem_t *sem, int count){
 
   PFILA2 pFilaSem = malloc(sizeof(PFILA2));
   CreateFila2(pFilaSem);
-  
-  csem_t *sem = (csem_t*) malloc(sizeof(csem_t));
+
+  *sem = malloc(sizeof(csem_t));
 
   sem->count = 1; //semáforo começa livre
   sem->fila = pFilaSem;
