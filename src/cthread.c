@@ -192,8 +192,8 @@ int csem_init(csem_t *sem, int count){
   sem->count = 1; //semáforo começa livre
   sem->fila = pFilaSem;
 
-  sucesso = check_malloc(sizeof(sem));
-  if(sucesso){ // não é nulo, sucesso
+
+  if(check_malloc(sizeof(sem));){ // não é nulo, sucesso
     return 0;
   } // erro
   else return -1;
