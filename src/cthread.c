@@ -232,7 +232,7 @@ int cjoin(int tid){
       /* Se tid não está na fila, ele deve ser adicionado, e a thread que
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
-      sFilaNode2 *pNovoTid = malloc(sizeof(NODE2));
+      NODE2 *pNovoTid = malloc(sizeof(NODE2));
       pNovoTid->ant = NULL;
       pNovoTid->next = NULL;
       pNovoTid->node = tid;
