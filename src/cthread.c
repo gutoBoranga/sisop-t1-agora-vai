@@ -187,13 +187,13 @@ int csignal(csem_t *sem);
 
 int csem_init(csem_t *sem, int count){
 
-  sem = malloc(sizeof(csem_t));
+  csem_t sem = (csem_t*) malloc(sizeof(csem_t));
 
   sem->count = 1; //semáforo começa livre
   sem->fila = pFilaSem;
 
 
-  if(check_malloc(sizeof(sem));){ // não é nulo, sucesso
+  if(sem){ // não é nulo, sucesso
     return 0;
   } // erro
   else return -1;
