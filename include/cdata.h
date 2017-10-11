@@ -22,9 +22,9 @@
 typedef struct s_TCB {
 	int		tid; 		// identificador da thread
 	int		state;		// estado em que a thread se encontra
-					// 0: Cria��o; 1: Apto; 2: Execu��o; 3: Bloqueado e 4: T�rmino
+					// 0: Criação; 1: Apto; 2: Execução; 3: Bloqueado e 4: Término
 	unsigned 	int		prio;		// prioridade da thread (higest=0; lowest=3)
-	ucontext_t 	context;	// contexto de execu��o da thread (SP, PC, GPRs e recursos)
+	ucontext_t 	context;	// contexto de execução da thread (SP, PC, GPRs e recursos)
 
 	/* Se necess�rio, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! */
 
@@ -51,6 +51,11 @@ PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáfo
 
 
 #define STACK 64000
+
+typedef struct s_sem {
+	int	count;	// indica se recurso est� ocupado ou n�o (livre > 0, ocupado = 0)
+	PFILA2	fila; 	// ponteiro para uma fila de threads bloqueadas no sem�foro
+} csem_t;
 
 typedef struct s_SCHEDULER {
   ucontext_t *mainContext;

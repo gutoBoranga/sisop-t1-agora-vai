@@ -3,7 +3,7 @@
 
 	Support Library
 	Vers.2017.2 - 11/08/17
-	
+
 ********************************************************************/
 
 #ifndef	__SUPPORTE_H__
@@ -17,7 +17,7 @@ struct	sFilaNode2 {
 struct sFila2 {
 	struct	sFilaNode2 *it;		// Iterador para varrer a lista
 	struct	sFilaNode2 *first;	// Primeiro elemento da lista
-	struct	sFilaNode2 *last;	// Último elemento da lista
+	struct	sFilaNode2 *last;	// ï¿½ltimo elemento da lista
 };
 
 typedef struct sFilaNode2	NODE2;
@@ -26,7 +26,7 @@ typedef struct sFilaNode2 *	PNODE2;
 typedef struct sFila2 *		PFILA2;
 
 /*-------------------------------------------------------------------
-Função:	Informa a versao da biblioteca
+Funï¿½ï¿½o:	Informa a versao da biblioteca
 Ret:	Numero da versao
 -------------------------------------------------------------------*/
 #define Year	2017
@@ -35,35 +35,35 @@ Ret:	Numero da versao
 
 
 /*-------------------------------------------------------------------
-Função:	Inicializa uma estrutura de dados do tipo FILA2
+Funï¿½ï¿½o:	Inicializa uma estrutura de dados do tipo FILA2
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro ou fila vazia)
+	!=0, caso contrï¿½rio (erro ou fila vazia)
 -------------------------------------------------------------------*/
 int	CreateFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Seta o iterador da fila no primeiro elemento
+Funï¿½ï¿½o:	Seta o iterador da fila no primeiro elemento
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro ou fila vazia)
+	!=0, caso contrï¿½rio (erro ou fila vazia)
 -------------------------------------------------------------------*/
 int	FirstFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Seta o iterador da fila no último elemento
+Funï¿½ï¿½o:	Seta o iterador da fila no ï¿½ltimo elemento
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro ou fila vazia)
+	!=0, caso contrï¿½rio (erro ou fila vazia)
 -------------------------------------------------------------------*/
 int	LastFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Seta o iterador da fila para o próximo elemento
+Funï¿½ï¿½o:	Seta o iterador da fila para o prï¿½ximo elemento
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro, fila vazia ou chegou ao final da fila)
+	!=0, caso contrï¿½rio (erro, fila vazia ou chegou ao final da fila)
 	Fila vazia		=> -NXTFILA_VAZIA
-	Iterador inválido	=> -NXTFILA_ITERINVAL
+	Iterador invï¿½lido	=> -NXTFILA_ITERINVAL
 	Atingido final da fila	=> -NXTFILA_ENDQUEUE
 -------------------------------------------------------------------*/
 #define	NXTFILA_VAZIA		1
@@ -73,9 +73,9 @@ int	NextFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Retorna o conteúdo do nodo endereçado pelo iterador da lista "pFila"
-Ret:	Ponteiro válido, se conseguiu
-	NULL, caso contrário:
+Funï¿½ï¿½o:	Retorna o conteï¿½do do nodo endereï¿½ado pelo iterador da lista "pFila"
+Ret:	Ponteiro vï¿½lido, se conseguiu
+	NULL, caso contrï¿½rio:
 		-> first==NULL (lista vazia)
 		-> it==NULL (iterador invalido)
 -------------------------------------------------------------------*/
@@ -83,42 +83,42 @@ void	*GetAtIteratorFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Retorna o conteúdo do nodo endereçado pelo iterador->next da lista "pFila"
-Ret:	Ponteiro válido, se conseguiu
-	NULL, caso contrário:
+Funï¿½ï¿½o:	Retorna o conteï¿½do do nodo endereï¿½ado pelo iterador->next da lista "pFila"
+Ret:	Ponteiro vï¿½lido, se conseguiu
+	NULL, caso contrï¿½rio:
 		-> first==NULL (lista vazia)
 		-> it==NULL (iterador invalido)
-		-> it->next==NULL (não tem NEXT)
+		-> it->next==NULL (nï¿½o tem NEXT)
 -------------------------------------------------------------------*/
 void 	*GetAtNextIteratorFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Retorna o conteúdo do nodo endereçado pelo iterador->ant da lista "pFila"
-Ret:	Ponteiro válido, se conseguiu
-	NULL, caso contrário:
+Funï¿½ï¿½o:	Retorna o conteï¿½do do nodo endereï¿½ado pelo iterador->ant da lista "pFila"
+Ret:	Ponteiro vï¿½lido, se conseguiu
+	NULL, caso contrï¿½rio:
 		-> first==NULL (lista vazia)
 		-> it==NULL (iterador invalido)
-		-> it->ant==NULL (não tem ANT)
+		-> it->ant==NULL (nï¿½o tem ANT)
 -------------------------------------------------------------------*/
 void 	*GetAtAntIteratorFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Coloca o ponteiro "content" no final da fila "pFila"
+Funï¿½ï¿½o:	Coloca o ponteiro "content" no final da fila "pFila"
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro)
+	!=0, caso contrï¿½rio (erro)
 -------------------------------------------------------------------*/
 int	AppendFila2(PFILA2 pFila, void *content);
 
 
 /*-------------------------------------------------------------------
-Função:	Coloca o ponteiro "content" logo após o elemento 
+Funï¿½ï¿½o:	Coloca o ponteiro "content" logo apï¿½s o elemento
 	correntemente apontado pelo iterador da fila "pFila"
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro)
+	!=0, caso contrï¿½rio (erro)
 	Fila vazia		=> -INSITER_VAZIA
-	Iterador inválido	=> -INSITER_INVAL
+	Iterador invï¿½lido	=> -INSITER_INVAL
 -------------------------------------------------------------------*/
 #define	INSITER_VAZIA	1
 #define	INSITER_INVAL	2
@@ -126,24 +126,24 @@ int	InsertAfterIteratorFila2(PFILA2 pFila, void *content);
 
 
 /*-------------------------------------------------------------------
-Função:	Coloca o ponteiro "content" logo antes do elemento correntemente apontado pelo iterador da fila "pFila"
+Funï¿½ï¿½o:	Coloca o ponteiro "content" logo antes do elemento correntemente apontado pelo iterador da fila "pFila"
 	A fila tem que ter, pelo menos, um elemento.
-	O iterador tem que ser válido.
+	O iterador tem que ser vï¿½lido.
 	Se a fila estiver vazia deve-se usar "AppendFila2"
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro)
+	!=0, caso contrï¿½rio (erro)
 	Fila vazia		=> -INSITER_VAZIA
-	Iterador inválido	=> -INSITER_INVAL
+	Iterador invï¿½lido	=> -INSITER_INVAL
 -------------------------------------------------------------------*/
 int	InsertBeforeIteratorFila2(PFILA2 pFila, void *content);
 
 
 /*-------------------------------------------------------------------
-Função:	Remove o elemento indicado pelo iterador, da lista "pFila"
+Funï¿½ï¿½o:	Remove o elemento indicado pelo iterador, da lista "pFila"
 Ret:	==0, se conseguiu
-	!=0, caso contrário (erro)
+	!=0, caso contrï¿½rio (erro)
 	Fila vazia		=> -DELITER_VAZIA
-	Iterador inválido	=> -DELITER_INVAL
+	Iterador invï¿½lido	=> -DELITER_INVAL
 -------------------------------------------------------------------*/
 #define	DELITER_VAZIA	1
 #define	DELITER_INVAL	2
@@ -151,29 +151,25 @@ int	DeleteAtIteratorFila2(PFILA2 pFila);
 
 
 /*-------------------------------------------------------------------
-Função:	Gera um número pseudo-aleatório entre 0 e 65535
-Ret:	Número gerado
+Funï¿½ï¿½o:	Gera um nï¿½mero pseudo-aleatï¿½rio entre 0 e 65535
+Ret:	Nï¿½mero gerado
 -------------------------------------------------------------------*/
 unsigned int	Random2();
 
 
 /*-------------------------------------------------------------------
-Função:	Dispara a leitura do delay de tempo
+Funï¿½ï¿½o:	Dispara a leitura do delay de tempo
 -------------------------------------------------------------------*/
 void	startTimer();
 
 
 /*-------------------------------------------------------------------
-Função:	Encerra a leitura do timer e informa o tempo transcorrido
-	O valor retornado está um número de ciclos de clock da CPU
-Ret:	Diferença de "tempo" entre o startTimer() e o stopTimer()
+Funï¿½ï¿½o:	Encerra a leitura do timer e informa o tempo transcorrido
+	O valor retornado estï¿½ um nï¿½mero de ciclos de clock da CPU
+Ret:	Diferenï¿½a de "tempo" entre o startTimer() e o stopTimer()
 -------------------------------------------------------------------*/
 unsigned int stopTimer();
 
 
 
 #endif
-
-
-
-
