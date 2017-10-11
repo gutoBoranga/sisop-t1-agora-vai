@@ -76,6 +76,28 @@ int csched_init() {
   }
 }
 
+// retorna 1 se thread estiver na fila (SUCCESS)
+// retorna 0 caso contrário
+int threadIsInFila(int tid, PFILA2 fila) {
+  TCB_t *thread;
+  FirstFila2(fila);
+
+  do {
+    if(fila->it == 0) {
+      break;
+    }
+
+    thread = (TCB_t *)GetAtIteratorFila2(fila);
+
+    if(thread->tid == tid_to_find) {
+      return TRUE;
+    }
+  } while(NextFila2(fila) == 0);
+
+  return FALSE;
+}
+
+// ------------------- funções da api -------------------
 
 int cidentify (char *name, int size) {
 
@@ -244,3 +266,40 @@ int cjoin(int tid){
   }
 
 /* Fim da edição */
+
+// cwait
+// Parâmetro: *sem, um ponteiro para uma variável do tipo semáforo.
+// Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
+
+int cwait (csem_t *sem) {
+  sem->count--;
+  
+  // se sem está livre:
+  if (sem->count >= 0) {
+    // tem que fazer algo mais aqui?
+    
+    return SUCCESS;
+  }
+  
+  // se sem está ocupado:
+  else {
+    // ponteiro pra thread executando
+    TCB_t* thread = malloc(sizeof(TCB_t));
+    
+    // --> se tivermos uma fila com todas threads:
+    // thread = getThreadFromTid(scheduler->executing);
+    
+    // --> ou, caso scheduler->executing seja um ponteiro pra um TCB_t:
+    // thread = scheduler->executing;
+
+    // adiciona thread executando na fila de threads bloqueadas do sem
+    AppendFila2(sem->fila, thread);
+    
+    // adiciona thread executando na fila de blocked
+    AppendFila2(scheduler->blocked, thread);
+    
+    // vai pro dispatcher pegar nova thread pra executar e segue o baile
+    
+    return SUCCESS;
+  }
+}

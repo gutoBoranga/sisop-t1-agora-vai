@@ -49,6 +49,11 @@ PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáfo
 #define ABLE_QUEUE 0  // codigo pra acessar a fila que quero listar
 #define BLOCKED_QUEUE 1
 
+#define ERROR -1 // pro retorno das funções
+#define SUCCESS 0
+
+#define TRUE 1 // pra controle de fluxo em alto nível
+#define FALSE 0
 
 #define STACK 64000
 
