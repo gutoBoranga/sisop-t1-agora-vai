@@ -89,7 +89,7 @@ int threadIsInFila(int tid, PFILA2 fila) {
 
     thread = (TCB_t *)GetAtIteratorFila2(fila);
 
-    if(thread->tid == tid_to_find) {
+    if(thread->tid == tid) {
       return TRUE;
     }
   } while(NextFila2(fila) == 0);
