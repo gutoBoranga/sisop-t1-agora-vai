@@ -232,10 +232,10 @@ int cjoin(int tid){
       /* Se tid não está na fila, ele deve ser adicionado, e a thread que
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
-      sFilaNode2 *novoTid = malloc(sizeof(NODE2));
-      novoTid->ant = NULL;
-      novoTid->next = NULL;
-      novoTid->node = tid;
+      sFilaNode2 *pNovoTid = malloc(sizeof(NODE2));
+      pNovoTid->ant = NULL;
+      pNovoTid->next = NULL;
+      pNovoTid->node = tid;
       AppendFila2(filaWaited, novoTid); /* não sei se pode ser só "tid", na support.pdf
       diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
       novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
@@ -272,33 +272,33 @@ int cjoin(int tid){
 
 int cwait (csem_t *sem) {
   sem->count--;
-  
+
   // se sem está livre:
   if (sem->count >= 0) {
     // tem que fazer algo mais aqui?
-    
+
     return SUCCESS;
   }
-  
+
   // se sem está ocupado:
   else {
     // ponteiro pra thread executando
     TCB_t* thread = malloc(sizeof(TCB_t));
-    
+
     // --> se tivermos uma fila com todas threads:
     // thread = getThreadFromTid(scheduler->executing);
-    
+
     // --> ou, caso scheduler->executing seja um ponteiro pra um TCB_t:
     // thread = scheduler->executing;
 
     // adiciona thread executando na fila de threads bloqueadas do sem
     AppendFila2(sem->fila, thread);
-    
+
     // adiciona thread executando na fila de blocked
     AppendFila2(scheduler->blocked, thread);
-    
+
     // vai pro dispatcher pegar nova thread pra executar e segue o baile
-    
+
     return SUCCESS;
   }
 }
