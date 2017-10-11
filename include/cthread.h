@@ -11,6 +11,7 @@
 #define __cthread__
 
 #include "support.h"
+#include "cdata.h"
 
 int cidentify (char *name, int size);
 
