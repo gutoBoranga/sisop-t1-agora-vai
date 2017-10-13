@@ -31,12 +31,12 @@ typedef struct s_TCB {
 
 } TCB_t;
 
-typedef struct s_sem { 
-int count;   // indica se recurso está ocupado ou não (livre > 0, ocupado ≤ 0) 
+typedef struct s_sem{
+int count; // indica se recurso está ocupado ou não (livre > 0, ocupado ≤ 0) 
 PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáforo. 
-} csem_t; 
+}csem_t;
 
-#define _XOPEN_SOURCE 600 // essa linha � s� pra funcionar no mac
+#define XOPEN_SOURCE 600 // essa linha � s� pra funcionar no mac
 
 
 #define NAMES "Augusto Boranga\nLucas Assis\nOct�vio Arruda\n"
@@ -55,11 +55,12 @@ PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáfo
 #define TRUE 1 // pra controle de fluxo em alto nível
 #define FALSE 0
 
-#define STACK 64000
+#define STACK 32000
 
 typedef struct s_SCHEDULER {
   ucontext_t *mainContext;
-  int executing;
+  
+  TCB_t* executing;
   PFILA2 able;
   PFILA2 blocked;
   int count;
