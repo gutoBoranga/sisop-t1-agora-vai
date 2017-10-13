@@ -1,8 +1,11 @@
+#include <stdio.h>
 #include <cthread.h>
 #include <cdata.h>
 
 
 void teste(void) {
+
+  printf("printou do teste!!!\n");
 }
 
 int main() {
@@ -16,6 +19,8 @@ int main() {
   printf("ccreate ok\n");
   list_threads(ABLE_QUEUE);
   printf("list_able ok\n");
+  cyield();
+  printf("voltou pra main!!!\n");
 
   return 0;
 }

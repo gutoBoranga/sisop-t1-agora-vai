@@ -5,12 +5,19 @@
 #include <cthread.h>
 #include <cdata.h>
 
+
+
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
+
+
+void pre_dispatcher() {
+}
 
 void list_threads(int queue) {
 
   PFILA2 q;
-  TCB_t *current;
+  PNODE2 currentNode;
+  TCB_t *currentThread;
 
   if (queue == ABLE_QUEUE) {
     q = scheduler->able;
@@ -23,8 +30,9 @@ void list_threads(int queue) {
   if (FirstFila2(q) == 0) {
 
     while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
-      current = (TCB_t*) GetAtIteratorFila2(q);
-      printf("tid: %d\n", current->tid);
+      currentNode = (PNODE2) GetAtIteratorFila2(q);
+      currentThread = (TCB_t*) currentNode->node;
+      printf("tid: %d\n", currentThread->tid);
       NextFila2(q);
     }
   }
@@ -36,18 +44,53 @@ void list_threads(int queue) {
   FirstFila2(q);  // volta pro inicio da fila
 }
 
-int dispatcher() {
-  return 0; // depois a gente faz isso
+
+int dispatcher() { 
+
+  // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
+
+  // estamos fingindo que a fila ja esta ordenada
+  
+  PFILA2 q = scheduler->able;
+  PNODE2 queueNode;
+  TCB_t *first;
+
+  if (FirstFila2(q) == 0) { // conseguiu por o iterador no primeiro elemento da fila
+
+    if (GetAtIteratorFila2(q) != NULL) { // tem alguem na fila pra pegar a cpu
+      NextFila2(q); // ==========> essa linha faz com que funcione (pq aí ele nao escalona pra main)
+      queueNode = (PNODE2)GetAtIteratorFila2(q);
+
+      first = queueNode->node;
+      scheduler->executing = first; // o em execuçao agora é o primeiro da fila
+      DeleteAtIteratorFila2(q); // tira ele da lista de aptos, pq ta executando
+      // começa o contador de tempo!!!!!!!!
+      printf("o tid do first eh %d\n", first->tid);
+      setcontext(&(first->context)); // poe pra executar o malandro
+      return 0;
+    }
+
+    /*    else { // nao tem ningeum pra pegar a cpu -> só segue o baile mas reseta o tempo pq ele tentou
+      // PARA O CONTADOR DE TEMPO
+      // COMEÇA O CONTADOR DE TEMPO
+      return 0;
+      }*/ // ---------------------------> ACHO QUE ESSE ELSE NAO PRECISA MAS VOU DEIXAR
+  }
+
+  else { // nao conseguiu por o iterador no primeiro elemento da fila (?)
+    return -1; // aí ta feio mesmo
+  }
 }
 
-int csched_init() {
+int csched_init() {  
 
   scheduler = malloc(sizeof(SCHEDULER_t));
   scheduler->able = malloc(sizeof(PFILA2));
   scheduler->blocked = malloc(sizeof(PFILA2));
 
   if (scheduler) {
-    scheduler->executing = -1; // ninguem executando
+    scheduler->mainContext = NULL;
+    scheduler->executing = NULL; // ninguem executando
     CreateFila2(scheduler->able); // filas vazias
     CreateFila2(scheduler->blocked);
     scheduler->count = 0; // ninguem escalonado ainda
@@ -102,46 +145,51 @@ int cidentify (char *name, int size) {
   return 0;
 }
 
-
 int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
     csched_init();
   }
 
-  if (scheduler->count == 0) { // aqui cria a thread da main
+  if (scheduler->mainContext == NULL) { // aqui cria a thread da main
 
     ucontext_t *mainContext = malloc(sizeof(ucontext_t));
-    TCB_t *mainThread;
-
-    mainThread = malloc(sizeof(TCB_t));
+    TCB_t *mainThread = malloc(sizeof(TCB_t));
 
     getcontext(mainContext);
     scheduler->mainContext = mainContext;
-
+    
     mainThread->state = PROCST_CRIACAO;
     mainThread->prio = PRIORITY;
-    mainThread->tid = MAIN_THREAD_TID;
+    mainThread->tid = 6969;
     mainThread->context = *mainContext;
 
-
-    AppendFila2(scheduler->able, mainThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! (eu acho kkkkk)
+    PNODE2 threadNode = malloc(sizeof(PNODE2));
+    threadNode->node = mainThread;
+    AppendFila2(scheduler->able, threadNode);
     scheduler->count++;
+    
   }
 
   // aqui é a nova thread
-
+  
   TCB_t *newThread = malloc(sizeof(TCB_t));
+  
   ucontext_t *newContext = malloc(sizeof(ucontext_t));
-  ucontext_t *currentContext = malloc(sizeof(ucontext_t));  // esse é o contexto atual
+  ucontext_t *dispatcherContext = malloc(sizeof(ucontext_t));  // esse é o contexto do dispatcher
+  
+  getcontext(dispatcherContext);
+  
+  dispatcherContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
+  dispatcherContext->uc_stack.ss_size = STACK; // tamanho da pilha
+  makecontext(dispatcherContext, (void (*)(void))dispatcher, ARGC, arg);
 
-  getcontext(currentContext);
+
   getcontext(newContext);
 
-  newContext->uc_link = dispatcher; // contexto a executar no término
+  newContext->uc_link = dispatcherContext; // contexto a executar no término
   newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
   newContext->uc_stack.ss_size = STACK; // tamanho da pilha
-
   makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
 
   newThread->state = PROCST_CRIACAO;
@@ -149,18 +197,32 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->tid = scheduler->count;
   newThread->context = *newContext;
 
-  AppendFila2(scheduler->able, newThread); // isso aqui tem que virar uma chamada pro dispatcher!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  scheduler->count++;
 
-  return newThread->tid;
+  PNODE2 newThreadNode = malloc(sizeof(PNODE2));
+  newThreadNode->node = newThread;
+  AppendFila2(scheduler->able, newThreadNode); // nova thread ta apta
+  scheduler->count++; // tem mais uma thread no scheduler
+ 
+  return 0;
 }
 
 
+int cyield(void) {
+
+  // PARA O CONTADOR DE TEMPO
+
+  PFILA2 q = scheduler->able;
+
+  PNODE2 executing = malloc(sizeof(PNODE2));
+  executing->node = scheduler->executing;
+  AppendFila2(q, executing); // coloca na fila de aptos quem ta pronto
+  scheduler->executing = NULL; // nao tem ninguem executando
+  dispatcher(); // chama o dispatcher pra ver quem vai
+}
 
 
-/*int cyield(void);
+/*
 int cjoin(int tid);
-int csem_init(csem_t *sem, int count);
 int cwait(csem_t *sem);
 int csignal(csem_t *sem);
 */
