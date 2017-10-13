@@ -7,24 +7,6 @@
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
-void list_able() {
-
-  TCB_t *current;
-
-  if (FirstFila2(scheduler->able) == 0) {
-
-    while (GetAtIteratorFila2(scheduler->able) != NULL) { // iterador no primeiro elemento
-      current = (TCB_t*) GetAtIteratorFila2(scheduler->able);
-      printf("tid: %d\n", current->tid);
-      NextFila2(scheduler->able);
-    }
-  }
-
-  else {
-    printf("lista vazia ou invalida\n");
-  }
-}
-
 void list_threads(int queue) {
 
   PFILA2 q;
@@ -54,7 +36,9 @@ void list_threads(int queue) {
   FirstFila2(q);  // volta pro inicio da fila
 }
 
-
+int dispatcher() {
+  return 0; // depois a gente faz isso
+}
 
 int csched_init() {
 
@@ -154,7 +138,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   getcontext(currentContext);
   getcontext(newContext);
 
-  newContext->uc_link = scheduler; // contexto a executar no término
+  newContext->uc_link = dispatcher; // contexto a executar no término
   newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
   newContext->uc_stack.ss_size = STACK; // tamanho da pilha
 
