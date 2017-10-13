@@ -89,7 +89,7 @@ int threadIsInFila(int tid, PFILA2 fila) {
 
     thread = (TCB_t *)GetAtIteratorFila2(fila);
 
-    if(thread->tid == tid) {
+    if(thread->tid == tid) { // era tid_to_find(que não tava def) antes de tid
       return TRUE;
     }
   } while(NextFila2(fila) == 0);
@@ -236,12 +236,15 @@ int cjoin(int tid){
       chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
       passada como argumento. */
       NODE2 *pNovoTid = malloc(sizeof(NODE2));
-      pNovoTid->ant = NULL;
-      pNovoTid->next = NULL;
       pNovoTid->node = tid;
       AppendFila2(filaWaited, pNovoTid); /* não sei se pode ser só "tid", na support.pdf
       diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
       novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
+
+
+      /* Acho interessante que o TCB da thread tenha um campo que aponte pra uma outra thread,
+       ideia: uma thread que fez cjoin tem a ela assoaciada a thread q ela espera.
+       Se n tem ngm na espera, é null */
 
         /* FALTA: criar um sistema que quando a thread esperada(que está na filaWaited)
         acabe, a thread bloqueada(que chamou) seja desbloqueada. Além disso, deve ser
