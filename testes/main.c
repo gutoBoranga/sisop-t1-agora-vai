@@ -6,21 +6,29 @@
 void teste(void) {
 
   printf("printou do teste!!!\n");
+  //cyield();
+  list_threads(ABLE_QUEUE);
 }
 
 int main() {
 
 
-  printf("cshched_init ok\n");
   void *(*fPointer)(void *) = &teste;
   void *x;
   ccreate(fPointer, x, 0);
   ccreate(fPointer, x, 0);
+  /* ccreate(fPointer, x, 0);
+  ccreate(fPointer, x, 0);
+  ccreate(fPointer, x, 0);
+  ccreate(fPointer, x, 0);
+  */
   printf("ccreate ok\n");
   list_threads(ABLE_QUEUE);
   printf("list_able ok\n");
   cyield();
   printf("voltou pra main!!!\n");
+  cyield();
+  printf("voltou de novo!!\n");
 
   return 0;
 }
