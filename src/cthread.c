@@ -318,7 +318,7 @@ int csignal(csem_t *sem);
 
 /* Editado por Octavio Arruda */
 
-TCB_t * retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
+TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
   TCB_t *temp;
 
@@ -371,7 +371,7 @@ int cjoin(int tid){
     já possui uma thread associada a ela(waited ou waiting).*/
     temp = FirstFila2(filathreads);
     if(temp->tid == tid){
-      *tcb = retorna_tid(tid, filathreads);
+      *tcb = retorna_tcb(tid, filathreads);
       if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) ){
         /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
         está esperando por ninguém TAMBÉM.
@@ -386,7 +386,7 @@ int cjoin(int tid){
       while(GetAtIteratorFila2(filathreads) != NULL){
         temp = GetAtIteratorFila2(filathreads);
         if(temp->tid == tid){
-          *tcb = retorna_tid(temp->tid, filathreads);
+          *tcb = retorna_tcb(temp->tid, filathreads);
 
           tcb->waitedby = chamou;
           chamou->waiting = tcb;
