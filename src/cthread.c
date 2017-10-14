@@ -324,7 +324,7 @@ int csignal(csem_t *sem);
 
 TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
-  TCB_t *temp;
+  TCB_t *temp = malloc(sizeof(*temp));
   PNODE2 current;
 
   temp = FirstFila2(fila);
