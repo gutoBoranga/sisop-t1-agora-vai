@@ -325,13 +325,13 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   temp = FirstFila2(fila);
   if(temp->tid == tid){
 
-    return (TCB_t*)*temp; // ponteiro para TCB da tid
+    return temp; // ponteiro para TCB da tid
   }
   else while(GetAtIteratorFila2(fila) != NULL){
     temp = GetAtIteratorFila2(fila);
-      if(temp->tid == tid) return *temp;
+      if(temp->tid == tid) return temp;
     }
-    if(temp->tid == tid) return *temp;
+    if(temp->tid == tid) return temp;
 }
 
 /*
