@@ -380,7 +380,7 @@ int cjoin(int tid){
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
         if(GetAtIteratorFila2(filathreads)->tid == tid){
-          tcb = retorna_tid(GetAtIteratorFila2(filathreads)->tid, filathreads);
+          tcb = retorna_tid(GetAtIteratorFila2(filathreads), filathreads);
 
           tcb->waitedby = chamou;
           chamou->waiting = tcb;
