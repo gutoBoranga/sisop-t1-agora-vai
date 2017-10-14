@@ -8,7 +8,6 @@
 
 int dispatcherContextSet = 0;
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
-int voltandopramain = 0;
 
 void list_threads(int queue) {
 
@@ -39,6 +38,61 @@ void list_threads(int queue) {
   }
 
   FirstFila2(q);  // volta pro inicio da fila
+}
+
+void firstAtBeggining() {
+
+  printf("vai ordenar\n");
+  PFILA2 q = scheduler->able;
+  PFILA2 greatest;
+  
+  int i = 0, greatestTid = -1, found = 0;
+  TCB_t *currentThread, *greatestThread;
+  PNODE2 currentNode, greatestNode;
+  
+
+  FirstFila2(q);
+
+  while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
+    currentNode = (PNODE2) GetAtIteratorFila2(q);
+    currentThread = (TCB_t*) currentNode->node;
+    printf("vendo o tid %d\n", currentThread->tid);
+    if (currentThread->tid > greatestTid) {
+      greatestTid = currentThread->tid;
+      greatestThread = currentThread;
+      greatest = q;
+    }
+    NextFila2(q);
+  }
+
+  
+  /* SE EU CONSEGUIR PEGAR O ITERADOR DA PRA USAR ISSO QUE É MAIS FACIL
+  if (greatestTid != -1) {
+    DeleteAtIteratorFila2(greatest); // tira da fila o maior
+    greatestNode = malloc(sizeof(PNODE2));
+    greatestNode->node = greatestThread;
+
+    FirstFila2(q); // poe o iterador no inicio da fila
+    InsertBeforeIteratorFila2(q, greatestNode); // poe o elemento novo no inicio
+  }
+  */
+
+  FirstFila2(q);
+  while (GetAtIteratorFila2(q) != NULL && !found) { // iterador no primeiro elemento
+    currentNode = (PNODE2) GetAtIteratorFila2(q);
+    currentThread = (TCB_t*) currentNode->node;
+    printf("vendo o tid %d\n", currentThread->tid);
+    if (currentThread->tid == greatestTid) {
+      DeleteAtIteratorFila2(q);
+      found = 1;
+    }
+    NextFila2(q);
+  }
+
+  FirstFila2(q);
+  greatestNode = malloc(sizeof(PNODE2));
+  greatestNode->node = greatestThread;
+  InsertBeforeIteratorFila2(q, greatestNode); // poe o elemento novo no inicio
 }
 
 
@@ -75,6 +129,8 @@ int dispatcher() {
   PNODE2 queueNode;
   TCB_t *first, *previous;
 
+  firstAtBeggining();
+
   if (FirstFila2(q) == 0) { // conseguiu por o iterador no primeiro elemento da fila
 
     if (GetAtIteratorFila2(q) != NULL) { // tem alguem na fila pra pegar a cpu
@@ -89,20 +145,7 @@ int dispatcher() {
       // começa o contador de tempo!!!!!!!!
       printf("o tid do first eh %d\n", first->tid);
 
-
-
-
-      if (first->tid == 0) {
-	printf("TA VOLTANDO PRA MAIN\n");
-	voltandopramain = 1;
-      }
-
-
-
-
-
-      //setcontext(&(first->context)); // poe pra executar o malandro
-      swapcontext(&(previous->context), &(first->context));
+      swapcontext(&(previous->context), &(first->context)); // poe pra executar o novato e salvar o estado anterior do antigo
       return 0;
     }
 
@@ -131,6 +174,7 @@ int csched_init() {
     CreateFila2(scheduler->able); // filas vazias
     CreateFila2(scheduler->blocked);
     scheduler->count = 0; // ninguem escalonado ainda
+    scheduler->ableCount = 0;
 
     PNODE2 threadNode = malloc(sizeof(PNODE2));
     TCB_t *mainThread = malloc(sizeof(TCB_t));
@@ -227,11 +271,6 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   char threadStack[SIGSTKSZ];
 
   getcontext(newContext);
-
-  if (voltandopramain) {
-    printf("veio pra ccreate mesmo!!!\n");
-    return 0;
-  }
 
   newContext->uc_link = &(scheduler->dispatcherContext); // contexto a executar no término
   newContext->uc_stack.ss_sp = threadStack; // endereço de início da pilha

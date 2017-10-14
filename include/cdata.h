@@ -64,6 +64,7 @@ typedef struct s_SCHEDULER {
   TCB_t* executing;
   PFILA2 able;
   PFILA2 blocked;
+  int ableCount;
   int count;
 } SCHEDULER_t;
 

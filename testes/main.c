@@ -6,7 +6,7 @@
 void teste(void) {
 
   printf("printou do teste!!!\n");
-  cyield();
+  //cyield();
   list_threads(ABLE_QUEUE);
 }
 
@@ -27,6 +27,8 @@ int main() {
   printf("list_able ok\n");
   cyield();
   printf("voltou pra main!!!\n");
+  cyield();
+  printf("voltou de novo!!\n");
 
   return 0;
 }
