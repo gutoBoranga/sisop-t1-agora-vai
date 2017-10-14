@@ -318,7 +318,6 @@ int csignal(csem_t *sem);
 
 /* Editado por Octavio Arruda */
 
-
 /* Função que retorna um ponteiro pra TCB da tid dada.
  ** OBRIGATÓRIO QUE A TID ESTEJA NA FILA **  */
 
