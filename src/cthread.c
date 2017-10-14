@@ -318,7 +318,7 @@ int csignal(csem_t *sem);
 
 /* Editado por Octavio Arruda */
 
-TCB_t retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
+TCB_t * retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
   TCB_t *temp;
 
