@@ -325,7 +325,7 @@ TCB_t retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   temp = FirstFila2(fila);
   if(temp->tid == tid){
 
-    return FirstFila2(fila) // ponteiro para TCB da tid
+    return (TCB_t*)*temp; // ponteiro para TCB da tid
   }
   else while(GetAtIteratorFila2(fila) != NULL){
     temp = GetAtIteratorFila2(fila);
@@ -386,7 +386,7 @@ int cjoin(int tid){
       while(GetAtIteratorFila2(filathreads) != NULL){
         temp = GetAtIteratorFila2(filathreads);
         if(temp->tid == tid){
-          *tcb = retorna_tid(GetAtIteratorFila2(filathreads), filathreads);
+          *tcb = retorna_tid(temp->tid, filathreads);
 
           tcb->waitedby = chamou;
           chamou->waiting = tcb;
