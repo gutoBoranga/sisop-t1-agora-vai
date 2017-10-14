@@ -318,17 +318,20 @@ int csignal(csem_t *sem);
 
 /* Editado por Octavio Arruda */
 
-TCB_t retorna_tid(TCB_t *tid, PFILA2 fila){ /* É necessário ter certeza de que a
+TCB_t retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
-  if(FirstFila2(fila)->tid == tid){
+  TCB_t *temp;
+
+  temp = FirstFila2(fila);
+  if(temp->tid == tid){
 
     return FirstFila2(fila) // ponteiro para TCB da tid
   }
-  else while(GetAtIteratorFila2(fila)->tid != tid){
-      if(GetAtIteratorFila2(fila)->tid == tid) return GetAtIteratorFila2(fila);
+  else while(GetAtIteratorFila2(fila) != NULL){
+    temp = GetAtIteratorFila2(fila);
+      if(temp->tid == tid) return GetAtIteratorFila2(fila);
     }
-    if(GetAtIteratorFila2(fila)->tid == tid) return GetAtIteratorFila2(fila);
-
+    if(temp->tid == tid) return GetAtIteratorFila2(fila);
 }
 
 /*
@@ -356,7 +359,7 @@ int csem_init(csem_t *sem, int count){
 int cjoin(int tid){
 
   PFILA2 filathreads = scheduler->able;
-  PFILA filabloqueados = scheduler->blocked;
+  PFILA2 filabloqueados = scheduler->blocked;
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
   TCB_t *temp;
