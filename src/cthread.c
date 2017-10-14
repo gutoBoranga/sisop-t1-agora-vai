@@ -371,7 +371,7 @@ int cjoin(int tid){
     já possui uma thread associada a ela(waited ou waiting).*/
     temp = FirstFila2(filathreads);
     if(temp->tid == tid){
-      *tcb = retorna_tcb(tid, filathreads);
+      tcb = retorna_tcb(tid, filathreads);
       if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) ){
         /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
         está esperando por ninguém TAMBÉM.
@@ -386,7 +386,7 @@ int cjoin(int tid){
       while(GetAtIteratorFila2(filathreads) != NULL){
         temp = GetAtIteratorFila2(filathreads);
         if(temp->tid == tid){
-          *tcb = retorna_tcb(temp->tid, filathreads);
+          tcb = retorna_tcb(temp->tid, filathreads);
 
           tcb->waitedby = chamou;
           chamou->waiting = tcb;
