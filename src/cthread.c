@@ -45,11 +45,11 @@ void firstAtBeggining() {
   printf("vai ordenar\n");
   PFILA2 q = scheduler->able;
   PFILA2 greatest;
-  
+
   int i = 0, greatestTid = -1, found = 0;
   TCB_t *currentThread, *greatestThread;
   PNODE2 currentNode, greatestNode;
-  
+
 
   FirstFila2(q);
 
@@ -65,7 +65,7 @@ void firstAtBeggining() {
     NextFila2(q);
   }
 
-  
+
   /* SE EU CONSEGUIR PEGAR O ITERADOR DA PRA USAR ISSO QUE É MAIS FACIL
   if (greatestTid != -1) {
     DeleteAtIteratorFila2(greatest); // tira da fila o maior
@@ -124,7 +124,7 @@ int dispatcher() {
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
   // estamos fingindo que a fila ja esta ordenada
-  
+
   PFILA2 q = scheduler->able;
   PNODE2 queueNode;
   TCB_t *first, *previous;
@@ -186,14 +186,14 @@ int csched_init() {
     if (!dispatcherContextSet) { // se ainda nao pegou o contexto do dispatcher vem pra ca
 
       printf("o contexto do dispatcher ainda nao foi colocado, entao bora\n");
-      
+
       scheduler->mainContext = mainContext; // define ele como contexto principal no scheduler
 
-      mainThread->state = PROCST_CRIACAO; // preenche as parada da thread 
+      mainThread->state = PROCST_CRIACAO; // preenche as parada da thread
       mainThread->prio = PRIORITY;
       mainThread->tid = 0;
-      mainThread->context = mainContext; 
-    
+      mainThread->context = mainContext;
+
       threadNode->node = mainThread; // coloca a thread no PNODE
       //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
       scheduler->executing = mainThread; // main que ta executando
@@ -205,7 +205,7 @@ int csched_init() {
     else
       printf("veio pra csched de volta mas ja tinha colocado o contexto do disp\n");
 
-    
+
     return 0;
   }
 
@@ -234,6 +234,8 @@ int threadIsInFila(int tid, PFILA2 fila) {
 
   return FALSE;
 }
+
+
 
 // ------------------- funções da api -------------------
 
@@ -266,7 +268,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   // aqui é a nova thread
   printf("criando nova thread\n");
-  TCB_t *newThread = malloc(sizeof(TCB_t));  
+  TCB_t *newThread = malloc(sizeof(TCB_t));
   ucontext_t *newContext = malloc(sizeof(ucontext_t));
   char threadStack[SIGSTKSZ];
 
@@ -287,7 +289,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThreadNode->node = newThread;
   AppendFila2(scheduler->able, newThreadNode); // nova thread ta apta
   scheduler->count++; // tem mais uma thread no scheduler
- 
+
   return 0;
 }
 
@@ -314,22 +316,36 @@ int cwait(csem_t *sem);
 int csignal(csem_t *sem);
 */
 
-/* Editado por Octavio Arruda
+/* Editado por Octavio Arruda */
+
+TCB_t retorna_tid(TCB_t tid, PFILA2 fila){ /* É necessário ter certeza de que a
+  tid está na fila para utilização desta função. */
+  if(FirstFila2(fila)->tid == tid){
+
+    return FirstFila2(fila) // ponteiro para TCB da tid
+  }
+  else while(GetAtIteratorFila2(fila)->tid != tid){
+      if(GetAtIteratorFila2(fila)->tid == tid) return GetAtIteratorFila2(fila);
+    }
+    if(GetAtIteratorFila2(fila)->tid == tid) return GetAtIteratorFila2(fila);
+
+}
+
+/*
   *** Inicialização do semáforo ***
 */
+
 
 int csem_init(csem_t *sem, int count){
 
   PFILA2 pFilaSem = malloc(sizeof(PFILA2));
   CreateFila2(pFilaSem);
 
-  //*sem = malloc(sizeof(csem_t));
+  if(pFilaSem){ // não é nulo, sucesso
 
-  sem->count = 1; //semáforo começa livre
-  sem->fila = pFilaSem;
+    sem->count = 1; //semáforo começa livre
+    sem->fila = pFilaSem;
 
-
-  if(sem){ // não é nulo, sucesso
     return 0;
   } // erro
   else return -1;
@@ -338,70 +354,43 @@ int csem_init(csem_t *sem, int count){
   // *** Sincronização de Término ***
 
 int cjoin(int tid){
-  /* A filaWaited e a filaBloqueados(é a fila do semáforo!!!!!!!!!!!)
-   deve ser criado em outro local...
-  Além disso, a fila do semáforo deverá desbloquear a thread bloqueada via
-  cjoin aqui mesmo. */
-  PFILA2 filaWaited = malloc(sizeof(PFILA2));
-  CreateFila2 (filaWaited);
 
-  // testar se a tid passada existe(e está executando)
-  if(tid < 0){
-    return -1; // tid menor que zero não existe, erro
-  }
-  else { // caso seja >=0, tid existe
+  PFILA2 filathreads = scheduler->able;
+  PFILA filabloqueados = scheduler->blocked;
+  TCB_t *tcb;
+  TCB_t *chamou = scheduler->executing;
 
-    if (FirstFila2(filaWaited) != tid){ /* testar se a thread da tid não está
-      sendo esperada por nenhuma outra thread */
+  if(chamou->waiting != NULL) return -1;
 
-        while(GetAtIteratorFila2(filaWaited) != tid) { /* Iteração sobre a fila
-          de "Esperados" até terminarem. */
+  if(threadIsInFila(tid, filathreads) == TRUE){ /* Se a thread que foi passada
+    como argumento pela cjoin já estiver na fila de threads, basta checar se ela
+    já possui uma thread associada a ela(waited ou waiting).*/
+    if(FirstFila2(filathreads)->tid == tid){
+      tcb = retorna_tid(tid, filathreads);
+      if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) ){
+        /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
+        está esperando por ninguém TAMBÉM.
+        */
+        tcb->waitedby = chamou;
+        chamou->waiting = tcb;
+        return 0; // a linkagem aconteceu e retorna 0
 
-          if (GetAtIteratorFila2(filaWaited) == tid){ /* tid já está na fila waited,  WARNING COMPRAÇÃO ENTRE POINTER E INTEGER, arrumada com o &
-            quem chamou cjoin nesta tid deverá continuar executando normalmente. */
-            return -1;
-          }
+      } else return -1;
+    }
+    else{
+      while(GetAtIteratorFila2(filathreads) != NULL){
+        if(GetAtIteratorFila2(filathreads)->tid == tid){
+          tcb = retorna_tid(GetAtIteratorFila2(filathreads)->tid, filathreads);
 
-          NextFila2(filaWaited);
+          tcb->waitedby = chamou;
+          chamou->waiting = tcb;
         }
       }
-      /* Se tid não está na fila, ele deve ser adicionado, e a thread que
-      chamou a cjoin poderá ser bloqueada e esperar pelo término da thread
-      passada como argumento. */
-      NODE2 *pNovoTid = malloc(sizeof(NODE2));
-      pNovoTid->node = tid;
-      AppendFila2(filaWaited, pNovoTid); /* não sei se pode ser só "tid", na support.pdf
-      diz que para int AppendFila2(PFILA2 pFila, void *content), content deve ser um
-      novo item e deve ser alocado dinamicamente da estrutura "sFilaNode2" */
-
-
-      /* Acho interessante que o TCB da thread tenha um campo que aponte pra uma outra thread,
-       ideia: uma thread que fez cjoin tem a ela assoaciada a thread q ela espera.
-       Se n tem ngm na espera, é null */
-
-        /* FALTA: criar um sistema que quando a thread esperada(que está na filaWaited)
-        acabe, a thread bloqueada(que chamou) seja desbloqueada. Além disso, deve ser
-        feito um free no nodo que estava na filaWaited, e na thread bloqueada que
-        estava na fila bloqueada.
-        */
-      return 0;
+      return -1;
     }
-    return -1;
-
-    /* É necessário um mecanismo para que as threads que estão sendo executadas
-    e que queiram fazer cjoin sejam inseridas em uma estrutura de dado, podendo
-    ser uma fila qualquer, de modo que um if's possamser checados:
-    1:  se a thread que fez cjoin já não fez cjoin antes(não é permitido
-     realizar duas chamadas de cjoin, nem para a mesma thread, nem para uma
-     diferente (ou seja, não se pode esperar mais de uma thread, mesmo que
-     a chamada de cjoin seja para a mesma thread feito antes)
-        senão, pode fazer cjoin, e na própria função de cjoin será checado se
-        a tid passada como argumento já não está sendo esperada ou não existe,
-        caso a resposta para essas duas perguntas seja não, a thread que fez
-        cjoin para a tid x, entrará para o estado bloqueado até que x conclua
-        seu trabalho.
-    */
   }
+}
+
 
 /* Fim da edição */
 
