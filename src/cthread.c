@@ -321,6 +321,7 @@ int csignal(csem_t *sem);
 TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
   TCB_t *temp;
+  PNODE2 current;
 
   temp = FirstFila2(fila);
   if(temp->tid == tid){
@@ -328,7 +329,9 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
     return temp; // ponteiro para TCB da tid
   }
   else while(GetAtIteratorFila2(fila) != NULL){
-    temp = GetAtIteratorFila2(fila);
+    current = (PNODE2)GetAtIteratorFila2(fila);
+    temp =  (TCB_t*)current->node;
+
       if(temp->tid == tid) return temp;
     }
     if(temp->tid == tid) return temp;
@@ -363,13 +366,16 @@ int cjoin(int tid){
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
   TCB_t *temp;
+  PNODE2 currentNode;
 
   if(chamou->waiting != NULL) return -1;
 
   if(threadIsInFila(tid, filathreads) == TRUE){ /* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
-    temp = FirstFila2(filathreads);
+    currentNode = (NODE2)FirstFila2(filathreads);
+    temp = currentNode->node;
+
     if(temp->tid == tid){
       tcb = retorna_tcb(tid, filathreads);
       if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) ){
@@ -378,13 +384,17 @@ int cjoin(int tid){
         */
         tcb->waitedby = chamou;
         chamou->waiting = tcb;
+        
         return 0; // a linkagem aconteceu e retorna 0
 
       } else return -1;
     }
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
-        temp = GetAtIteratorFila2(filathreads);
+
+        currentNode = (NODE2)GetAtIteratorFila2(filathreads);
+        temp = currentNode->node;
+
         if(temp->tid == tid){
           tcb = retorna_tcb(temp->tid, filathreads);
 
