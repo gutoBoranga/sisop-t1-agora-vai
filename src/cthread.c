@@ -320,7 +320,7 @@ int csignal(csem_t *sem);
 
 TCB_t retorna_tid(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   tid está na fila para utilização desta função. */
-  TCB_t *temp;
+  temp = malloc(sizeof(TCB_t));
 
   temp = FirstFila2(fila);
   if(temp->tid == tid){
