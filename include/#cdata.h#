@@ -68,3 +68,6 @@ typedef struct s_SCHEDULER {
 } SCHEDULER_t;
 
 #endif
+
+
+main -> ccreate -> csched_init -> dispatcher

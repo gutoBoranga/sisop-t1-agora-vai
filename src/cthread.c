@@ -6,12 +6,9 @@
 #include <cdata.h>
 
 
-
+int dispatcherContextSet = 0;
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
-
-
-void pre_dispatcher() {
-}
+int voltandopramain = 0;
 
 void list_threads(int queue) {
 
@@ -45,28 +42,67 @@ void list_threads(int queue) {
 }
 
 
-int dispatcher() { 
+int dispatcher() {
 
+  printf("entrando no dispatcher\n");
+
+  if (!dispatcherContextSet) {
+
+    printf("vai pegar o contexto do dispatcher!\n");
+    ucontext_t dispatcherContext;
+    getcontext(&dispatcherContext);
+
+    // o contexto do dispatcher sempre vai apontar pra ca, entao
+    // temos que verificar de novo pra só sair fora do dispatcher na 1a vez
+    // if (!dispatcherContextSet) {
+
+      printf("pegou o contexto do dispatcher\n");
+      dispatcherContextSet = 1; // nao entra mais nesses lugares!!!
+      scheduler->dispatcherContext = dispatcherContext;
+      setcontext(&(scheduler->mainContext)); // volta pro contexto da main
+      // }
+
+      // else
+      printf("voltou pro dispatcher mas ja tinha o contexto\n");
+  }
+
+  printf("começando a atividade normal do dispatcher\n");
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
   // estamos fingindo que a fila ja esta ordenada
   
   PFILA2 q = scheduler->able;
   PNODE2 queueNode;
-  TCB_t *first;
+  TCB_t *first, *previous;
 
   if (FirstFila2(q) == 0) { // conseguiu por o iterador no primeiro elemento da fila
 
     if (GetAtIteratorFila2(q) != NULL) { // tem alguem na fila pra pegar a cpu
-      NextFila2(q); // ==========> essa linha faz com que funcione (pq aí ele nao escalona pra main)
+      //NextFila2(q); // ==========> essa linha faz com que funcione (pq aí ele nao escalona pra main)
       queueNode = (PNODE2)GetAtIteratorFila2(q);
+
+      previous = scheduler->executing; // thread que tava executando
 
       first = queueNode->node;
       scheduler->executing = first; // o em execuçao agora é o primeiro da fila
       DeleteAtIteratorFila2(q); // tira ele da lista de aptos, pq ta executando
       // começa o contador de tempo!!!!!!!!
       printf("o tid do first eh %d\n", first->tid);
-      setcontext(&(first->context)); // poe pra executar o malandro
+
+
+
+
+      if (first->tid == 0) {
+	printf("TA VOLTANDO PRA MAIN\n");
+	voltandopramain = 1;
+      }
+
+
+
+
+
+      //setcontext(&(first->context)); // poe pra executar o malandro
+      swapcontext(&(previous->context), &(first->context));
       return 0;
     }
 
@@ -82,19 +118,50 @@ int dispatcher() {
   }
 }
 
-int csched_init() {  
+int csched_init() {
+
+
+  printf("iniciando o scheduler!\n");
 
   scheduler = malloc(sizeof(SCHEDULER_t));
   scheduler->able = malloc(sizeof(PFILA2));
   scheduler->blocked = malloc(sizeof(PFILA2));
 
   if (scheduler) {
-    scheduler->mainContext = NULL;
-    scheduler->executing = NULL; // ninguem executando
     CreateFila2(scheduler->able); // filas vazias
     CreateFila2(scheduler->blocked);
     scheduler->count = 0; // ninguem escalonado ainda
 
+    PNODE2 threadNode = malloc(sizeof(PNODE2));
+    TCB_t *mainThread = malloc(sizeof(TCB_t));
+    ucontext_t mainContext;
+
+    getcontext(&mainContext); // pega o contexto atual (que vai ser o da main)
+    printf("veio pro contexto da main\n");
+
+    if (!dispatcherContextSet) { // se ainda nao pegou o contexto do dispatcher vem pra ca
+
+      printf("o contexto do dispatcher ainda nao foi colocado, entao bora\n");
+      
+      scheduler->mainContext = mainContext; // define ele como contexto principal no scheduler
+
+      mainThread->state = PROCST_CRIACAO; // preenche as parada da thread 
+      mainThread->prio = PRIORITY;
+      mainThread->tid = 0;
+      mainThread->context = mainContext; 
+    
+      threadNode->node = mainThread; // coloca a thread no PNODE
+      //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
+      scheduler->executing = mainThread; // main que ta executando
+      scheduler->count++;
+
+      dispatcher(); // chama o dispatcher dizendo que é a primeira vez que ele é executado
+    }
+
+    else
+      printf("veio pra csched de volta mas ja tinha colocado o contexto do disp\n");
+
+    
     return 0;
   }
 
@@ -148,48 +215,27 @@ int cidentify (char *name, int size) {
 int ccreate (void* (*start)(void*), void *arg, int prio) {
 
   if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
+    printf("scheduler nulo: bora inicializa essa merda\n");
     csched_init();
-  }
-
-  if (scheduler->mainContext == NULL) { // aqui cria a thread da main
-
-    ucontext_t *mainContext = malloc(sizeof(ucontext_t));
-    TCB_t *mainThread = malloc(sizeof(TCB_t));
-
-    getcontext(mainContext);
-    scheduler->mainContext = mainContext;
-    
-    mainThread->state = PROCST_CRIACAO;
-    mainThread->prio = PRIORITY;
-    mainThread->tid = 6969;
-    mainThread->context = *mainContext;
-
-    PNODE2 threadNode = malloc(sizeof(PNODE2));
-    threadNode->node = mainThread;
-    AppendFila2(scheduler->able, threadNode);
-    scheduler->count++;
-    
+    printf("ta no ccreate\n");
   }
 
   // aqui é a nova thread
-  
-  TCB_t *newThread = malloc(sizeof(TCB_t));
-  
+  printf("criando nova thread\n");
+  TCB_t *newThread = malloc(sizeof(TCB_t));  
   ucontext_t *newContext = malloc(sizeof(ucontext_t));
-  ucontext_t *dispatcherContext = malloc(sizeof(ucontext_t));  // esse é o contexto do dispatcher
-  
-  getcontext(dispatcherContext);
-  
-  dispatcherContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
-  dispatcherContext->uc_stack.ss_size = STACK; // tamanho da pilha
-  makecontext(dispatcherContext, (void (*)(void))dispatcher, ARGC, arg);
-
+  char threadStack[SIGSTKSZ];
 
   getcontext(newContext);
 
-  newContext->uc_link = dispatcherContext; // contexto a executar no término
-  newContext->uc_stack.ss_sp = malloc(STACK); // endereço de início da pilha
-  newContext->uc_stack.ss_size = STACK; // tamanho da pilha
+  if (voltandopramain) {
+    printf("veio pra ccreate mesmo!!!\n");
+    return 0;
+  }
+
+  newContext->uc_link = &(scheduler->dispatcherContext); // contexto a executar no término
+  newContext->uc_stack.ss_sp = threadStack; // endereço de início da pilha
+  newContext->uc_stack.ss_size = sizeof(threadStack); // tamanho da pilha
   makecontext(newContext, (void (*)(void))start, ARGC, arg);  // cast pra funçao void* sem argumento
 
   newThread->state = PROCST_CRIACAO;
@@ -216,7 +262,9 @@ int cyield(void) {
   PNODE2 executing = malloc(sizeof(PNODE2));
   executing->node = scheduler->executing;
   AppendFila2(q, executing); // coloca na fila de aptos quem ta pronto
-  scheduler->executing = NULL; // nao tem ninguem executando
+  //scheduler->executing = NULL; // nao tem ninguem executando
+
+  printf("o tid %d ta liberando e vai chamar o dispatcher\n", scheduler->executing->tid);
   dispatcher(); // chama o dispatcher pra ver quem vai
 }
 
