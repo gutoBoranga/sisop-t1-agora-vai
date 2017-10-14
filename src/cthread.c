@@ -380,7 +380,7 @@ int cjoin(int tid){
     }
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
-        *temp = GetAtIteratorFila2(filathreads);
+        temp = GetAtIteratorFila2(filathreads);
         if(temp->tid == tid){
           *tcb = retorna_tid(GetAtIteratorFila2(filathreads), filathreads);
 
