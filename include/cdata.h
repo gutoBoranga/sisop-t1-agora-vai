@@ -33,8 +33,8 @@ typedef struct s_TCB {
 	de controle para a sicronização de término. As threads estarão linkadas entre
 	si: a thread que espera o término e a thread que tem seu término esperado.
 	*/
-	TCB_t *waiting;
-	TCB_t *waitedby;
+	TCB_t* waiting;
+	TCB_t* waitedby;
 
 } TCB_t;
 
