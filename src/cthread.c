@@ -359,6 +359,7 @@ int cjoin(int tid){
   PFILA filabloqueados = scheduler->blocked;
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
+  TCB_t *temp;
 
   if(chamou->waiting != NULL) return -1;
 
@@ -379,7 +380,8 @@ int cjoin(int tid){
     }
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
-        if(GetAtIteratorFila2(filathreads)->tid == tid){
+        *temp = GetAtIteratorFila2(filathreads);
+        if(temp->tid == tid){
           *tcb = retorna_tid(GetAtIteratorFila2(filathreads), filathreads);
 
           tcb->waitedby = chamou;
