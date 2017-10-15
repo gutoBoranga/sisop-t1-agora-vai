@@ -387,7 +387,7 @@ int cjoin(int tid){
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
 
-    currentNode = (NODE2)FirstFila2(filathreads);
+    currentNode = FirstFila2(filathreads);
     temp = (TCB_t*)currentNode->node;
 
     if(temp->tid == tid){
@@ -414,7 +414,7 @@ int cjoin(int tid){
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
 
-        currentNode = (NODE2)GetAtIteratorFila2(filathreads);
+        currentNode = GetAtIteratorFila2(filathreads);
         temp = (TCB_t*)currentNode->node;
         NextFila2(filathreads);
 
