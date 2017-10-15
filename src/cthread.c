@@ -386,12 +386,8 @@ int cjoin(int tid){
   if(threadIsInFila(tid, filaaptos) == TRUE){/* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
-    if( FirstFila2(filathreads) != 0 ) return ERROR;
 
-    currentNode = GetAtIteratorFila2(filathreads);
-    temp = (TCB_t*)currentNode->node;
-
-    tcb = retorna_tcb(tid, filathreads);
+    tcb = retorna_tcb(tid, filaaptos);
 
     if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
     {    /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
