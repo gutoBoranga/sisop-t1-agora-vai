@@ -373,11 +373,10 @@ int cjoin(int tid){
 
   PFILA2 filaaptos = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
-  PFILA2 filacerta;
+  PFILA2 filacerta; 
 
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
-  TCB_t *temp;
 
   PNODE2 currentNode;
 
@@ -391,18 +390,22 @@ int cjoin(int tid){
     filacerta = filaaptos;
 
     } else if(threadIsInFila(tid, filabloqueados) == TRUE){
-      filacerta = filabloqueados;
-    }else return ERROR;
+      filacerta = filabloqueados; /* filacerta é a fila em que a tid está:
+      ou filabloqueados ou filaaptos. */
+    }else return ERROR; // se não estiver em nenhuma das duas, retorna erro
 
-    tcb = retorna_tcb(tid, filacerta);
+    tcb = retorna_tcb(tid, filacerta); // pega o TCB da tid
 
     if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
-    {
-     tcb->waitedby = chamou;
-     chamou->waiting = tcb;
+    { /* Se o tcb passado como argumento não tiver ninguém esperando por ele E
+      a thread que chamou não estiver esperando por ninguém
+      */
+     tcb->waitedby = chamou; // Pode fazer um encadeamento entre as duas threads
+     chamou->waiting = tcb; // em uma relação de esperado-esperando
 
 
-    AppendFila2(scheduler->blocked, chamou);
+    AppendFila2(scheduler->blocked, chamou); /* Quem chamou a cjoin passa a ser
+    bloqueada.  */
     dispatcher();
 
     return SUCCESS;
