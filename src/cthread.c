@@ -326,17 +326,24 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
   TCB_t *temp = malloc(sizeof(*temp));
   PNODE2 current;
 
-  temp = FirstFila2(fila);
-  if(temp->tid == tid){
+  if( FirstFila2(fila) == 0 ){
 
-    return temp; // ponteiro para TCB da tid
-  }
-  else while(GetAtIteratorFila2(fila) != NULL){
     current = (PNODE2)GetAtIteratorFila2(fila);
-    temp =  (TCB_t*)current->node;
+    temp = (TCB_t*)current->node;
 
-      if(temp->tid == tid) return temp;
+    if(temp->tid == tid){
+      return temp; // ponteiro para TCB da tid
+      }
+
+    }  else while(GetAtIteratorFila2(fila) != NULL){
+
+      current = (PNODE2)GetAtIteratorFila2(fila);
+      temp =  (TCB_t*)current->node;
+      if( temp->tid == tid ) return temp;
+
+      NextFila2(fila);
     }
+
     if(temp->tid == tid) return temp;
 }
 
@@ -366,16 +373,20 @@ int cjoin(int tid){
 
   PFILA2 filathreads = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
+
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
   TCB_t *temp;
+
   PNODE2 currentNode;
 
-  if(chamou->waiting != NULL) return -1;
+  if(chamou->waiting != NULL) return -1; /* se quem fez cjoin já tá esperando
+  retorna código de erro */
 
   if(threadIsInFila(tid, filathreads) == TRUE){ /* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
+
     currentNode = FirstFila2(filathreads);
     temp = currentNode->node;
 
@@ -388,24 +399,40 @@ int cjoin(int tid){
         tcb->waitedby = chamou;
         chamou->waiting = tcb;
 
-        return 0; // a linkagem aconteceu e retorna 0
+        swapcontext(&(chamou->context), &(tcb->context));
 
-      } else return -1;
+        /* Nesse caso: falta fazer a mudança de contexto para que a
+        thread que estavam executando e fez cjoin ser bloqueada e a thread
+        que foi passada como argumento entrar.
+        */
+        AppendFila2(scheduler->blocked, chamou);
+        scheduler->executing = tcb;
+        return SUCESS;
+
+      } else return ERROR;
     }
     else{
       while(GetAtIteratorFila2(filathreads) != NULL){
 
         currentNode = GetAtIteratorFila2(filathreads);
         temp = currentNode->node;
+        NextFila2(filathreads);
 
-        if(temp->tid == tid){
+        if(temp->tid == tid){ // se a tid foi encontrada
           tcb = retorna_tcb(temp->tid, filathreads);
 
           tcb->waitedby = chamou;
           chamou->waiting = tcb;
+
+          AppendFila2(scheduler->blocked, chamou);
+          scheduler->executing = tcb;
+
+          swapcontext(&(chamou->context), &(tcb->context));
+
+          return SUCESS;
         }
       }
-      return -1;
+      return ERROR;
     }
   }
 }
