@@ -13,7 +13,7 @@
 all: clean compile_to_object_file generate_static_library
 
 compile_to_object_file:
-	gcc -c src/cthread.c -I include -o bin/cthread.o
+	gcc  -g -c src/cthread.c -I include -o bin/cthread.o
 
 generate_static_library:
 	ar crs lib/libcthread.a bin/cthread.o bin/support.o
