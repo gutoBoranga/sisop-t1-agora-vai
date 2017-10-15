@@ -395,12 +395,9 @@ int cjoin(int tid){
     }else return ERROR;
 
     tcb = retorna_tcb(tid, filacerta);
-    
+
     if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
     {
-    /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
-       está esperando por ninguém TAMBÉM.
-       */
      tcb->waitedby = chamou;
      chamou->waiting = tcb;
 
@@ -410,7 +407,6 @@ int cjoin(int tid){
 
     return SUCCESS;
   } else return ERROR;
-    }
 }
 
 
