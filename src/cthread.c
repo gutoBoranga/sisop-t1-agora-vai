@@ -394,6 +394,8 @@ int cjoin(int tid){
       filacerta = filabloqueados;
     }else return ERROR;
 
+    tcb = retorna_tcb(tid, filacerta);
+    
     if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
     {
     /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
