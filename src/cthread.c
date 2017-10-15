@@ -407,7 +407,7 @@ int cjoin(int tid){
         */
         AppendFila2(scheduler->blocked, chamou);
         scheduler->executing = tcb;
-        return SUCESS;
+        return SUCCESS;
 
       } else return ERROR;
     }
@@ -429,7 +429,7 @@ int cjoin(int tid){
 
           swapcontext(&(chamou->context), &(tcb->context));
 
-          return SUCESS;
+          return SUCCESS;
         }
       }
       return ERROR;
