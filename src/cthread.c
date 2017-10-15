@@ -373,6 +373,7 @@ int cjoin(int tid){
 
   PFILA2 filaaptos = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
+  PFILA2 filacerta;
 
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
@@ -380,29 +381,34 @@ int cjoin(int tid){
 
   PNODE2 currentNode;
 
-  if(chamou->waiting != NULL) return -1; /* se quem fez cjoin já tá esperando
+  if(chamou->waiting != NULL) return ERROR; /* se quem fez cjoin já tá esperando
   retorna código de erro */
+
 
   if(threadIsInFila(tid, filaaptos) == TRUE){/* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
+    filacerta = filaaptos;
 
-    tcb = retorna_tcb(tid, filaaptos);
+    } else if(threadIsInFila(tid, filabloqueados) == TRUE){
+      filacerta = filabloqueados;
+    }else return ERROR;
 
     if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
-    {    /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
-        está esperando por ninguém TAMBÉM.
-        */
-      tcb->waitedby = chamou;
-      chamou->waiting = tcb;
+    {
+    /* Ninguém fez cjoin nela ainda nessa thread, e a thread que chamou não
+       está esperando por ninguém TAMBÉM.
+       */
+     tcb->waitedby = chamou;
+     chamou->waiting = tcb;
 
-      AppendFila2(scheduler->blocked, chamou);
-      dispatcher();
 
-      return SUCCESS;
+    AppendFila2(scheduler->blocked, chamou);
+    dispatcher();
 
-      }
-    }else return ERROR; // a thread chamada não tá na fila
+    return SUCCESS;
+  } else return ERROR;
+    }
 }
 
 
