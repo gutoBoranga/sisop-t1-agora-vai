@@ -504,14 +504,10 @@ int cwait (csem_t *sem) {
 
   // se sem está ocupado:
   else {
-    // ponteiro pra thread executando
     TCB_t* thread;
 
-    // --> se tivermos uma fila com todas threads:
-    // thread = getThreadFromTid(scheduler->executing);
-
-    // --> ou, caso scheduler->executing seja um ponteiro pra um TCB_t:
-    // thread = scheduler->executing;
+    // ponteiro pra thread executando
+    thread = scheduler->executing;
 
     // adiciona thread executando na fila de threads bloqueadas do sem
     AppendFila2(sem->fila, thread);
@@ -520,6 +516,7 @@ int cwait (csem_t *sem) {
     AppendFila2(scheduler->blocked, thread);
 
     // vai pro dispatcher pegar nova thread pra executar e segue o baile
+    setcontext(&(scheduler->dispatcherContext));
 
     return SUCCESS;
   }
