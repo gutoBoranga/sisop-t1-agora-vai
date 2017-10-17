@@ -253,7 +253,7 @@ int removeThreadFromFila(int tid, PFILA2 fila) {
     thread = (TCB_t *)GetAtIteratorFila2(fila);
 
     if(thread->tid == tid) {
-      DeleteAtIteratorFila2(PFILA2 pFila);
+      DeleteAtIteratorFila2(fila);
       return TRUE;
     }
   } while(NextFila2(fila) == 0);
@@ -467,10 +467,10 @@ int csignal (csem_t *sem) {
     
     // pega o primeiro da fila
     FirstFila2(sem->fila);
-    thread = (TCB_t *)GetAtIteratorFila2(fila);
+    thread = (TCB_t *)GetAtIteratorFila2(sem->fila);
     
     // tenta remover dos bloqueados. Se não encontrar a thread lá, retorna erro
-    if (!removeThreadFromFila(thread->tid, scheduler->bloqueados)) {
+    if (!removeThreadFromFila(thread->tid, scheduler->blocked)) {
       return ERROR;
     }
     
@@ -493,33 +493,34 @@ int csignal (csem_t *sem) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int cwait (csem_t *sem) {
-  sem->count--;
-
-  // se sem está livre:
-  if (sem->count >= 0) {
-    // tem que fazer algo mais aqui?
-
-    return SUCCESS;
-  }
-
-  // se sem está ocupado:
-  else {
-    TCB_t* thread;
-
-    // ponteiro pra thread executando
-    thread = scheduler->executing;
-
-    // adiciona thread executando na fila de threads bloqueadas do sem
-    AppendFila2(sem->fila, thread);
-
-    // adiciona thread executando na fila de blocked
-    AppendFila2(scheduler->blocked, thread);
-
-    // vai pro dispatcher pegar nova thread pra executar e segue o baile
-    setcontext(&(scheduler->dispatcherContext));
-
-    return SUCCESS;
-  }
+  setcontext(&(scheduler->dispatcherContext));
+  // sem->count--;
+  //
+  // // se sem está livre:
+  // if (sem->count >= 0) {
+  //   // tem que fazer algo mais aqui?
+  //
+  //   return SUCCESS;
+  // }
+  //
+  // // se sem está ocupado:
+  // else {
+  //   TCB_t* thread;
+  //
+  //   // ponteiro pra thread executando
+  //   thread = scheduler->executing;
+  //
+  //   // adiciona thread executando na fila de threads bloqueadas do sem
+  //   AppendFila2(sem->fila, thread);
+  //
+  //   // adiciona thread executando na fila de blocked
+  //   AppendFila2(scheduler->blocked, thread);
+  //
+  //   // vai pro dispatcher pegar nova thread pra executar e segue o baile
+  //   setcontext(&(scheduler->dispatcherContext));
+  //
+  //   return SUCCESS;
+  // }
 }
 
 
