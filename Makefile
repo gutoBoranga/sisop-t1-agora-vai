@@ -27,4 +27,8 @@ clean:
 test:
 	gcc -g testes/main.c -I include -L lib -lcthread -o testes/main
 	./testes/main
+	
+test2:
+	gcc -g testes/context_test.c -I include -L lib -lcthread -o testes/context_test
+	./testes/context_test
 #	valgrind --leak-check=yes ./testes/main
