@@ -250,7 +250,7 @@ int removeThreadFromFila(int tid, PFILA2 fila) {
       break;
     }
 
-    thread = (TCB_t *)GetAtIteratorFila2(fila);
+    thread = (TCB_t *) GetAtIteratorFila2(fila);
 
     if(thread->tid == tid) {
       DeleteAtIteratorFila2(fila);
@@ -385,6 +385,7 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
 
 
 int csem_init(csem_t *sem, int count){
+  sem = malloc(sizeof(csem_t));
 
   PFILA2 pFilaSem = malloc(sizeof(PFILA2));
   CreateFila2(pFilaSem);
@@ -493,34 +494,33 @@ int csignal (csem_t *sem) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int cwait (csem_t *sem) {
-  setcontext(&(scheduler->dispatcherContext));
-  // sem->count--;
-  //
-  // // se sem está livre:
-  // if (sem->count >= 0) {
-  //   // tem que fazer algo mais aqui?
-  //
-  //   return SUCCESS;
-  // }
-  //
-  // // se sem está ocupado:
-  // else {
-  //   TCB_t* thread;
-  //
-  //   // ponteiro pra thread executando
-  //   thread = scheduler->executing;
-  //
-  //   // adiciona thread executando na fila de threads bloqueadas do sem
-  //   AppendFila2(sem->fila, thread);
-  //
-  //   // adiciona thread executando na fila de blocked
-  //   AppendFila2(scheduler->blocked, thread);
-  //
-  //   // vai pro dispatcher pegar nova thread pra executar e segue o baile
-  //   setcontext(&(scheduler->dispatcherContext));
-  //
-  //   return SUCCESS;
-  // }
+  sem->count--;
+  
+  // se sem está livre:
+  if (sem->count >= 0) {
+    // tem que fazer algo mais aqui?
+  
+    return SUCCESS;
+  }
+  
+  // se sem está ocupado:
+  else {
+    TCB_t* thread;
+  
+    // ponteiro pra thread executando
+    thread = scheduler->executing;
+  
+    // adiciona thread executando na fila de threads bloqueadas do sem
+    AppendFila2(sem->fila, thread);
+  
+    // adiciona thread executando na fila de blocked
+    AppendFila2(scheduler->blocked, thread);
+  
+    // vai pro dispatcher pegar nova thread pra executar e segue o baile
+    setcontext(&(scheduler->dispatcherContext));
+  
+    return SUCCESS;
+  }
 }
 
 
