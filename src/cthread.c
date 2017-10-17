@@ -233,7 +233,7 @@ int threadIsInFila(int tid, PFILA2 fila) {
 
     thread = (TCB_t *)GetAtIteratorFila2(fila);
 
-    if(thread->tid == tid) { // era tid_to_find(que não tava def) antes de tid
+    if(thread->tid == tid) { // obrigado :)
       return TRUE;
     }
   } while(NextFila2(fila) == 0);
@@ -241,6 +241,25 @@ int threadIsInFila(int tid, PFILA2 fila) {
   return FALSE;
 }
 
+int removeThreadFromFila(int tid, PFILA2 fila) {
+  TCB_t *thread;
+  FirstFila2(fila);
+
+  do {
+    if(fila->it == 0) {
+      break;
+    }
+
+    thread = (TCB_t *)GetAtIteratorFila2(fila);
+
+    if(thread->tid == tid) {
+      DeleteAtIteratorFila2(PFILA2 pFila);
+      return TRUE;
+    }
+  } while(NextFila2(fila) == 0);
+
+  return FALSE;
+}
 
 
 // ------------------- funções da api -------------------
@@ -287,7 +306,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newContext.uc_link =&(scheduler->dispatcherContext); // contexto a executar no término
   newContext.uc_stack.ss_sp = threadStack; // endereço de início da pilha
   newContext.uc_stack.ss_size = sizeof(threadStack); // tamanho da pilha
-  makecontext(&newContext, (void (*)(void))start, ARGC, arg); 
+  makecontext(&newContext, (void (*)(void))start, ARGC, arg);
   
   
   newThread->state = PROCST_CRIACAO;
@@ -386,7 +405,7 @@ int cjoin(int tid){
 
   PFILA2 filaaptos = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
-  PFILA2 filacerta; 
+  PFILA2 filacerta;
 
   TCB_t *tcb;
   TCB_t *chamou = scheduler->executing;
@@ -430,6 +449,45 @@ int cjoin(int tid){
 
 /* Fim da edição */
 
+// csignal
+// Parâmetro: *sem, um ponteiro para uma variável do tipo semáforo.
+// Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
+
+int csignal (csem_t *sem) {
+  sem->count++;
+
+  // se sem está livre, não tem ninguém bloqueado. Portanto, retorna dizendo que foi tudo ok.
+  if (sem->count >= 0) {
+    return SUCCESS;
+  }
+
+  // se sem está ocupado:
+  else {
+    TCB_t* thread;
+    
+    // pega o primeiro da fila
+    FirstFila2(sem->fila);
+    thread = (TCB_t *)GetAtIteratorFila2(fila);
+    
+    // tenta remover dos bloqueados. Se não encontrar a thread lá, retorna erro
+    if (!removeThreadFromFila(thread->tid, scheduler->bloqueados)) {
+      return ERROR;
+    }
+    
+    // adiciona na fila dos aptos
+    AppendFila2(scheduler->able, thread);
+
+    return SUCCESS;
+  }
+}
+
+// Liberação de recurso: a chamada csignal serve para indicar que a thread está liberando o recurso.
+// Para cada chamada da primitiva csignal, a variável count deverá ser incrementada de uma unidade.
+// Se houver mais de uma thread bloqueada a espera desse recurso a primeira delas, segundo uma política de FIFO,
+// deverá passar para o estado apto e as demais devem continuar no estado bloqueado.
+
+// -------------------------------------------------------------------------------------------------------------
+
 // cwait
 // Parâmetro: *sem, um ponteiro para uma variável do tipo semáforo.
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
@@ -447,7 +505,7 @@ int cwait (csem_t *sem) {
   // se sem está ocupado:
   else {
     // ponteiro pra thread executando
-    TCB_t* thread = malloc(sizeof(TCB_t));
+    TCB_t* thread;
 
     // --> se tivermos uma fila com todas threads:
     // thread = getThreadFromTid(scheduler->executing);
@@ -466,6 +524,8 @@ int cwait (csem_t *sem) {
     return SUCCESS;
   }
 }
+
+
 
 void teste2() {
   setcontext(&(scheduler->dispatcherContext));
