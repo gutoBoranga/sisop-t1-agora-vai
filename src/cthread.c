@@ -90,7 +90,6 @@ void firstAtBeggining() {
 
 
 int dispatcher() {
-
   endingThread = 0;
   printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
 
@@ -267,14 +266,13 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->prio = PRIORITY;
   newThread->tid = scheduler->count;
   
-  char threadStack[SIGSTKSZ];
-  
   // mexe direto no contexto que tá dentro da thread
   getcontext(&newThread->context);
   
   newThread->context.uc_link = &(scheduler->dispatcherContext);
-  newThread->context.uc_stack.ss_sp = threadStack;
-  newThread->context.uc_stack.ss_size = sizeof(threadStack);
+  newThread->context.uc_stack.ss_sp = malloc(SIGSTKSZ);
+  newThread->context.uc_stack.ss_size = SIGSTKSZ;
+  
   makecontext(&newThread->context, (void (*)(void))start, ARGC, arg);
   
 
