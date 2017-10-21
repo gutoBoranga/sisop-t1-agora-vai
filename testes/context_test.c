@@ -17,6 +17,7 @@ void* print_the_sound_of_a_cup_hitting_the_ground(void) {
 int main() {
   int tid1 = ccreate(&print_the_sound_of_a_capybara, NULL, 0);
   int tid2 = ccreate(&print_the_sound_of_a_cup_hitting_the_ground, NULL, 0);
+  printf("\n\n> começou a main\n\n");
   
   cyield();
   

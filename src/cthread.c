@@ -90,8 +90,14 @@ void firstAtBeggining() {
 
 
 int dispatcher() {
-  endingThread = 0;
+  // endingThread = 0;
+  
   printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
+  
+  if (endingThread) {
+    printf("\nparece que alguma thread acabou\n");
+    endingThread = 0;
+  }
 
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
@@ -99,7 +105,7 @@ int dispatcher() {
 
   PFILA2 q = scheduler->able;
   PNODE2 queueNode;
-  TCB_t *first, *previous;
+  TCB_t *first;
 
   firstAtBeggining();
 
@@ -111,16 +117,14 @@ int dispatcher() {
       
       queueNode = (PNODE2)GetAtIteratorFila2(q);
       
-      previous = scheduler->executing; // thread que tava executando
-
       first = queueNode->node;
       scheduler->executing = first; // o em execuçao agora é o primeiro da fila
       DeleteAtIteratorFila2(q); // tira ele da lista de aptos, pq ta executando
       // começa o contador de tempo!!!!!!!!
       printf("- o tid do first eh %d\n", first->tid);
-      printf("- vai dar swap no context, se preparem!\n");
+      printf("- vai dar setcontext, se preparem!\n");
 
-      swapcontext(&(previous->context), &(first->context)); // poe pra executar o novato e salvar o estado anterior do antigo
+      setcontext(&(scheduler->executing->context)); // poe pra executar o novato
       return 0;
     }
 
@@ -287,6 +291,11 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
 int cyield(void) {
   printf("entruo no yield\n");
+  
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
+    printf("scheduler nulo: bora inicializa essa merda\n");
+    csched_init();
+  }
 
   // PARA O CONTADOR DE TEMPO
   //setcontext(&(scheduler->dispatcherContext));
@@ -299,7 +308,9 @@ int cyield(void) {
 
   printf("o tid %d ta liberando e vai chamar o dispatcher\n", scheduler->executing->tid);
   endingThread = 0;
-  dispatcher(); // chama o dispatcher pra ver quem vai
+  
+  // vai pro contexto do dispatcher e salva o estado da thread que estava executando
+  swapcontext(&(scheduler->executing->context), &(scheduler->dispatcherContext));
 }
 
 
