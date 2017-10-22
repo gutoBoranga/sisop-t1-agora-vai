@@ -112,6 +112,17 @@ void firstAtBeggining() {
 int dispatcher() {
   // printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
   printf("\n[ DISPATCHER ]\n");
+
+
+  unsigned int elapsedTime = stopTimer();
+  timeManagement(elapsedTime);
+
+  printf("o tid %d ficou %d segundos (?)\n", scheduler->executing->tid, elapsedTime);
+
+
+
+
+  
   
   // se chegou aqui porque uma thread acabou
   if (endingThread) {
@@ -148,6 +159,7 @@ int dispatcher() {
       printf("- o tid do first eh %d\n", first->tid);
       printf("- vai dar setcontext, se preparem!\n");
 
+      startTimer();
       setcontext(&(scheduler->executing->context)); // poe pra executar o novato
       return 0;
     }
@@ -163,6 +175,7 @@ int dispatcher() {
     return -1; // aí ta feio mesmo
   }
 }
+
 
 int csched_init() {
   printf("\n\n[ INIT ]\n");
@@ -205,6 +218,7 @@ int csched_init() {
     threadNode->node = mainThread; // coloca a thread no PNODE
     //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
     scheduler->executing = mainThread; // main que ta executando
+    startTimer(); // começa a contar o tempo da main
     scheduler->count++;
 
     return 0;
@@ -262,6 +276,34 @@ int removeThreadFromFila(int tid, PFILA2 fila) {
   } while(NextFila2(fila) == 0);
 
   return FALSE;
+}
+
+void timeManagement(unsigned int lastReading) {
+
+  TCB_t *current = scheduler->executing;
+
+  printf("vendo a prioridade da %d\n", current->tid);
+  
+  if (current->lastTime == 0) { // primeira execuçao nao faz nada
+    current->prio = 0;
+  }
+
+  else if (current->lastTime <= lastReading) { // a execucao anterior foi maior ou igual, entao aumenta a prio
+    if (current->prio < 3) {// só aumenta a prioridade se n for a maxima
+      printf("prioridade foi de %d pra %d \n", current->prio, current->prio++);
+      current->prio++;
+    }
+  }
+
+  else { // se nao diminui
+    if (current->prio > 0) {
+      printf("prioridade foi de %d pra %d \n", current->prio, current->prio--);
+      current->prio--;
+    }
+  }
+      
+  current->lastTime = lastReading;
+
 }
 
 

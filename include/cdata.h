@@ -26,15 +26,12 @@ typedef struct s_TCB {
 	unsigned 	int		prio;		// prioridade da thread (higest=0; lowest=3)
 	ucontext_t 	context;	// contexto de execução da thread (SP, PC, GPRs e recursos)
 
-	/* Se necess�rio, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! */
+        // Se necess�rio, pode-se acresecentar campos nessa estrutura A PARTIR DAQUI! 
 	// Para cjoin
-
-	/* esses dois campos serão adicionados em todas as TCBs pra criar um método
-	de controle para a sicronização de término. As threads estarão linkadas entre
-	si: a thread que espera o término e a thread que tem seu término esperado.
-	*/
 	struct s_TCB *waiting;
 	struct s_TCB *waitedby;
+
+  unsigned int lastTime;
 
 } TCB_t;
 
@@ -73,6 +70,7 @@ typedef struct s_SCHEDULER {
   PFILA2 blocked;
   int ableCount;
   int count;
+  unsigned int executionTime;
 } SCHEDULER_t;
 
 #endif
