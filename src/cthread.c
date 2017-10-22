@@ -18,7 +18,8 @@ int endingThread = 1;
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
 void list_threads(int queue) {
-
+  
+  printf("LISTA DAS THREADS NA FILA %i\n", queue);
   PFILA2 q;
   PNODE2 currentNode;
   TCB_t *currentThread;
@@ -97,14 +98,18 @@ void firstAtBeggining() {
 
 
 int dispatcher() {
-  // endingThread = 0;
+  // printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
+  printf("\n[ DISPATCHER ]\n");
   
-  printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
-  
+  // se chegou aqui porque uma thread acabou
   if (endingThread) {
+    // aqui tem que checar se tem alguma thread esperando a atual acabar
+    // por causa do CJOIN
+    
     printf("\nparece que alguma thread acabou\n");
-    endingThread = 0;
   }
+  
+  endingThread = 1;
 
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
@@ -148,7 +153,7 @@ int dispatcher() {
 }
 
 int csched_init() {
-  
+  printf("\n\n[ INIT ]\n");
   printf("iniciando o scheduler!\n");
 
   scheduler = malloc(sizeof(SCHEDULER_t));
@@ -203,14 +208,15 @@ int csched_init() {
 int threadIsInFila(int tid, PFILA2 fila) {
   TCB_t *thread;
   FirstFila2(fila);
-
+  
   do {
     if(fila->it == 0) {
       break;
     }
-
-    thread = (TCB_t *)GetAtIteratorFila2(fila);
-
+    PNODE2 current;
+    current = (PNODE2)GetAtIteratorFila2(fila);
+    thread = (TCB_t *) current->node;
+    
     if(thread->tid == tid) { // obrigado :)
       return TRUE;
     }
@@ -266,11 +272,11 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
     printf("scheduler nulo: bora inicializa essa merda\n");
     csched_init();
-    printf("\n\nta no ccreate\n");
   }
 
   // aqui é a nova thread
-  printf("criando nova thread\n\n");
+  printf("\n[ CCREATE ]\n");
+    
   TCB_t *newThread = malloc(sizeof(TCB_t));
   
   newThread->state = PROCST_CRIACAO;
@@ -292,12 +298,12 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   AppendFila2(scheduler->able, newThreadNode); // nova thread ta apta
   scheduler->count++; // tem mais uma thread no scheduler
 
-  return 0;
+  return newThread->tid;
 }
 
 
 int cyield(void) {
-  printf("entruo no yield\n");
+  printf("\n[ CYIELD ]\n");
   
   if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
     printf("scheduler nulo: bora inicializa essa merda\n");
@@ -313,7 +319,7 @@ int cyield(void) {
   AppendFila2(q, executing); // coloca na fila de aptos quem ta pronto
   //scheduler->executing = NULL; // nao tem ninguem executando
 
-  printf("o tid %d ta liberando e vai chamar o dispatcher\n", scheduler->executing->tid);
+  // printf("o tid %d ta liberando e vai chamar o dispatcher\n", scheduler->executing->tid);
   endingThread = 0;
   
   // vai pro contexto do dispatcher e salva o estado da thread que estava executando
@@ -381,7 +387,9 @@ int csem_init(csem_t *sem, int count){
 
   // *** Sincronização de Término ***
 
-int cjoin(int tid){
+int cjoin(int tid) {
+  
+  printf("\n[ CJOIN ]\n");
 
   PFILA2 filaaptos = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
@@ -395,12 +403,10 @@ int cjoin(int tid){
   if(chamou->waiting != NULL) return ERROR; /* se quem fez cjoin já tá esperando
   retorna código de erro */
 
-
   if(threadIsInFila(tid, filaaptos) == TRUE){/* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
     filacerta = filaaptos;
-
     } else if(threadIsInFila(tid, filabloqueados) == TRUE){
       filacerta = filabloqueados; /* filacerta é a fila em que a tid está:
       ou filabloqueados ou filaaptos. */
@@ -415,12 +421,12 @@ int cjoin(int tid){
      tcb->waitedby = chamou; // Pode fazer um encadeamento entre as duas threads
      chamou->waiting = tcb; // em uma relação de esperado-esperando
 
-
     AppendFila2(scheduler->blocked, chamou); /* Quem chamou a cjoin passa a ser
     bloqueada.  */
 
     endingThread = 0;
-    dispatcher();
+    
+    swapcontext(&(scheduler->executing->context), &(scheduler->dispatcherContext));
 
     return SUCCESS;
   } else return ERROR;
