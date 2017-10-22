@@ -54,23 +54,35 @@ void firstAtBeggining() {
   PFILA2 q = scheduler->able;
   PFILA2 greatest;
 
-  int i = 0, greatestTid = -1, found = 0, end = 0;
+  int i = 0, greatestTid = -1, found = 0, end = 0, greatest_tid_only_if_this_is_the_only_thread_available = -1;
   TCB_t *currentThread, *greatestThread;
   PNODE2 currentNode, greatestNode;
 
-
+  
   FirstFila2(q);
   while (GetAtIteratorFila2(q) != NULL) {
     currentNode = (PNODE2) GetAtIteratorFila2(q);
     currentThread = (TCB_t*) currentNode->node;
     printf("vendo o tid %d\n", currentThread->tid);
     if (currentThread->tid > greatestTid) {
-      greatestTid = currentThread->tid;
-      greatestThread = currentThread;
-      greatest = q;
+      if (currentThread->tid == scheduler->executing->tid) {
+        // se o tid da currentThread for o que """"está executando""""
+        // ele não pode ser escolhido a menos que seja a unica thread
+        greatest_tid_only_if_this_is_the_only_thread_available = currentThread->tid;
+      } else {
+        // senão, o tid pode ser escolhido
+        greatestTid = currentThread->tid;
+        greatestThread = currentThread;
+        greatest = q;
+      }
     }
     
     NextFila2(q);
+  }
+  
+  if (greatestTid = -1) {
+    // se não achou nenhuma thread além da que está executando, vai essa mesmo né, paciência
+    greatestTid = greatest_tid_only_if_this_is_the_only_thread_available;
   }
 
   FirstFila2(q);
@@ -207,13 +219,15 @@ int csched_init() {
 // retorna 0 caso contrário
 int threadIsInFila(int tid, PFILA2 fila) {
   TCB_t *thread;
+  PNODE2 current;
+  
   FirstFila2(fila);
   
   do {
     if(fila->it == 0) {
       break;
     }
-    PNODE2 current;
+    
     current = (PNODE2)GetAtIteratorFila2(fila);
     thread = (TCB_t *) current->node;
     
@@ -227,14 +241,19 @@ int threadIsInFila(int tid, PFILA2 fila) {
 
 int removeThreadFromFila(int tid, PFILA2 fila) {
   TCB_t *thread;
-  FirstFila2(fila);
+  PNODE2 current;
+  
+  if (FirstFila2(fila) != 0) {
+    return ERROR;
+  }
 
   do {
     if(fila->it == 0) {
       break;
     }
-
-    thread = (TCB_t *) GetAtIteratorFila2(fila);
+    
+    current = (PNODE2) GetAtIteratorFila2(fila);
+    thread = (TCB_t*) current->node;
 
     if(thread->tid == tid) {
       DeleteAtIteratorFila2(fila);
@@ -370,15 +389,16 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
 
 
 int csem_init(csem_t *sem, int count){
-  sem = malloc(sizeof(csem_t));
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
+    printf("scheduler nulo: bora inicializa essa merda\n");
+    csched_init();
+  }
 
-  PFILA2 pFilaSem = malloc(sizeof(PFILA2));
-  CreateFila2(pFilaSem);
+  sem->fila = malloc(sizeof(FILA2));
+  CreateFila2(sem->fila);
 
-  if(pFilaSem){ // não é nulo, sucesso
-
+  if(sem->fila){ // não é nulo, sucesso
     sem->count = 1; //semáforo começa livre
-    sem->fila = pFilaSem;
 
     return 0;
   } // erro
@@ -440,28 +460,45 @@ int cjoin(int tid) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int csignal (csem_t *sem) {
+  printf("\n\n[ CSIGNAL ]\n");
+  
+  printf("-> count: %i\n", sem->count);
   sem->count++;
+  printf("-> count: %i\n", sem->count);
 
   // se sem está livre, não tem ninguém bloqueado. Portanto, retorna dizendo que foi tudo ok.
-  if (sem->count >= 0) {
+  if (sem->count > 0) {
+    printf("-> não tinha ninguém bloqueado aqui\n");
     return SUCCESS;
   }
 
   // se sem está ocupado:
   else {
+    printf("-> ihh, tinha gente esperando\n");
+    
     TCB_t* thread;
     
     // pega o primeiro da fila
     FirstFila2(sem->fila);
-    thread = (TCB_t *)GetAtIteratorFila2(sem->fila);
+    
+    PNODE2 blocked_node;
+    blocked_node = GetAtIteratorFila2(sem->fila);
+    thread = (TCB_t *) blocked_node->node;
     
     // tenta remover dos bloqueados. Se não encontrar a thread lá, retorna erro
     if (!removeThreadFromFila(thread->tid, scheduler->blocked)) {
+      printf("-> erro ao tentar desbloquear thread %i\n", thread->tid);
       return ERROR;
     }
     
+    printf("-> desbloqueei a thread %i\n", thread->tid);
+    
     // adiciona na fila dos aptos
-    AppendFila2(scheduler->able, thread);
+    PNODE2 node = malloc(sizeof(PNODE2));
+    node->node = thread;
+    AppendFila2(scheduler->able, node);
+    
+    printf("-> botei a thread %i nos aptos\n", thread->tid);
 
     return SUCCESS;
   }
@@ -479,31 +516,43 @@ int csignal (csem_t *sem) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int cwait (csem_t *sem) {
-  // setcontext(&scheduler->dispatcherContext);
+  printf("\n\n[ CWAIT ]\n");
+  
+  printf("-> count: %i\n", sem->count);
   sem->count--;
+  printf("-> count: %i\n", sem->count);
   
   // se sem está livre:
   if (sem->count >= 0) {
     // tem que fazer algo mais aqui?
-  
+    printf("-> livre!\n");
     return SUCCESS;
   }
   
   // se sem está ocupado:
   else {
-    TCB_t* thread;
-  
+    printf("-> tem gente!\n");
+    
+    if (sem->fila == NULL) {
+      return ERROR;
+    }
+    
     // ponteiro pra thread executando
-    thread = scheduler->executing;
-  
+    TCB_t* thread = scheduler->executing;
+      
     // adiciona thread executando na fila de threads bloqueadas do sem
-    AppendFila2(sem->fila, thread);
+    PNODE2 node = malloc(sizeof(PNODE2));
+    node->node = thread;
+    AppendFila2(sem->fila, node);
+    
+    printf("meteu na fila da sinaleira\n");
   
     // adiciona thread executando na fila de blocked
-    AppendFila2(scheduler->blocked, thread);
-  
+    AppendFila2(scheduler->blocked, node);
+    
     // vai pro dispatcher pegar nova thread pra executar e segue o baile
-    setcontext(&(scheduler->dispatcherContext));
+    endingThread = 0;
+    swapcontext(&(scheduler->executing->context), &(scheduler->dispatcherContext));
   
     return SUCCESS;
   }

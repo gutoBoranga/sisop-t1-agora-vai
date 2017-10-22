@@ -2,32 +2,36 @@
 #include <cthread.h>
 #include <cdata.h>
 
-
-
+csem_t sinaleira;
 
 void* print_the_sound_of_a_cup_hitting_the_ground(void) {
-  printf("\n> creck!\n");
+  printf("\n> creck!\n> Quero entrar na secao critica");
+  
+  cwait(&sinaleira);
+  printf("> SECAO CRITICA NA print_the_sound_of_a_cup_hitting_the_ground\nUHUUL");
+  cyield();
+  csignal(&sinaleira);
+  printf("\n>voltei do csignal e já vou mimbora\n\n");
+  
   return NULL;
 }
 
 void* print_the_sound_of_a_capybara(void) {
+  printf("> capivara tentando entrar na secao critica");
+  cwait(&sinaleira);
+  printf("\n> SECAO CRITICA!!11!1!!onze!");
   printf("\n\n> AheoUYUOoomTgUU\n\n");
-  int tid2 = ccreate(&print_the_sound_of_a_cup_hitting_the_ground, NULL, 0);
-  printf("TID: %i\n", tid2);
-  
-  // cjoin(tid2);
-  
-  // printf("\n\n> capivara fez cjoin\n\n");
-  // printf("\n\n> voltando à capivara pra encerrar\n\n");
+  csignal(&sinaleira);
   return NULL;
 }
 
 int main() {
   printf("\n\n> começou a main\n\n");
   
-  int tid1 = ccreate(&print_the_sound_of_a_capybara, NULL, 0);
-  printf("TID: %i\n", tid1);
+  csem_init(&sinaleira, 0);
   
+  int tid1 = ccreate(&print_the_sound_of_a_capybara, NULL, 0);
+  int tid2 = ccreate(&print_the_sound_of_a_cup_hitting_the_ground, NULL, 0);
   
   cyield();
   
