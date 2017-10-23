@@ -5,7 +5,11 @@
 
 void teste(void) {
 
-  printf("printou do teste!!!\n");
+  printf("entrou no teste\n");
+  cyield();
+  printf("voltou pro teste deopis do yield\n");
+  cyield();
+  printf("terminando o teste!!!\n");
   //cyield();
   //list_threads(ABLE_QUEUE);
 }

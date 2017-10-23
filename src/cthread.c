@@ -17,6 +17,61 @@ int endingThread = 1;
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
+
+int greatestPriorityAtHead() {
+
+  PFILA2 q = scheduler->able;
+  int greatestPriority = 0;
+  int keepThread = 0;
+
+  TCB_t greatestThread, *currentThread;
+  PNODE2  currentNode;
+  PNODE2 greatestNode;
+
+  if (FirstFila2(q) == 0) { // se tem alguem
+
+
+ // por padrao o maior é o que já tá executando
+    greatestThread = *scheduler->executing;
+    
+    
+    while (GetAtIteratorFila2(q) != NULL) {
+      currentNode = (PNODE2) GetAtIteratorFila2(q);
+      currentThread = (TCB_t*) currentNode->node;
+      printf("vendo o tid %d com prioridade %d\n", currentThread->tid, currentThread->prio);
+
+      printf("%d >= %d e %d < %d?\n", currentThread->prio, greatestPriority, currentThread->tid, greatestThread.tid);
+      if (currentThread->prio >= greatestPriority && currentThread->tid < greatestThread.tid) {
+	greatestPriority = currentThread->prio;
+	greatestThread = *currentThread;
+	greatestNode = currentNode;
+	printf("agora a maior é a com tid %d com prioridade %d\n", greatestThread.tid, greatestThread.prio);
+      }
+
+      NextFila2(q);
+    }
+  }
+
+  else {
+    return -1;
+  }
+  
+  printf("a maior é a tid %d com prioridade %d\n", greatestThread.tid, greatestThread.prio);
+
+
+
+  removeThreadFromFila(greatestThread.tid, q);
+
+  FirstFila2(q);
+
+  InsertBeforeIteratorFila2(q, greatestNode); // poe o elemento novo no inicio
+
+  return 0;
+
+
+}
+
+
 void list_threads(int queue) {
   
   printf("LISTA DAS THREADS NA FILA %i\n", queue);
@@ -54,7 +109,7 @@ void firstAtBeggining() {
   PFILA2 q = scheduler->able;
   PFILA2 greatest;
 
-  int i = 0, greatestTid = -1, found = 0, end = 0, greatest_tid_only_if_this_is_the_only_thread_available = -1;
+  int i = 0, greatestPrio = -1, found = 0, end = 0, greatest_tid_only_if_this_is_the_only_thread_available = -1, greatestTid;
   TCB_t *currentThread, *greatestThread;
   PNODE2 currentNode, greatestNode;
 
@@ -63,24 +118,27 @@ void firstAtBeggining() {
   while (GetAtIteratorFila2(q) != NULL) {
     currentNode = (PNODE2) GetAtIteratorFila2(q);
     currentThread = (TCB_t*) currentNode->node;
-    printf("vendo o tid %d\n", currentThread->tid);
-    if (currentThread->tid > greatestTid) {
+    printf("vendo o tid %d com prioridade %d\n", currentThread->tid, currentThread->prio);
+    if (currentThread->prio > greatestPrio) {
       if (currentThread->tid == scheduler->executing->tid) {
         // se o tid da currentThread for o que """"está executando""""
         // ele não pode ser escolhido a menos que seja a unica thread
         greatest_tid_only_if_this_is_the_only_thread_available = currentThread->tid;
       } else {
         // senão, o tid pode ser escolhido
-        greatestTid = currentThread->tid;
+        greatestPrio = currentThread->prio;
         greatestThread = currentThread;
+	greatestTid = currentThread->tid;
         greatest = q;
+
+	printf("escolheu o tid %d com prioridade %d\n", currentThread->tid, currentThread->prio);
       }
     }
     
     NextFila2(q);
   }
   
-  if (greatestTid = -1) {
+  if (greatestPrio = -1) {
     // se não achou nenhuma thread além da que está executando, vai essa mesmo né, paciência
     greatestTid = greatest_tid_only_if_this_is_the_only_thread_available;
   }
@@ -89,7 +147,7 @@ void firstAtBeggining() {
   while (GetAtIteratorFila2(q) != NULL && !found) { // iterador no primeiro elemento
     currentNode = (PNODE2) GetAtIteratorFila2(q);
     currentThread = (TCB_t*) currentNode->node;
-    printf("vendo o tid %d\n", currentThread->tid);
+    printf("vendo o tid %d com prio %d\n", currentThread->tid, currentThread->prio);
     if (currentThread->tid == greatestTid) {
       DeleteAtIteratorFila2(q);
       found = 1;
@@ -142,8 +200,9 @@ int dispatcher() {
   PNODE2 queueNode;
   TCB_t *first;
 
-  firstAtBeggining();
-
+  //firstAtBeggining();
+  greatestPriorityAtHead();
+  
   if (FirstFila2(q) == 0) { // conseguiu por o iterador no primeiro elemento da fila
     
     if (GetAtIteratorFila2(q) != NULL) { // tem alguem na fila pra pegar a cpu
@@ -152,15 +211,15 @@ int dispatcher() {
       
       queueNode = (PNODE2)GetAtIteratorFila2(q);
       
-      first = queueNode->node;
+      first = (TCB_t*) queueNode->node;
       scheduler->executing = first; // o em execuçao agora é o primeiro da fila
-      DeleteAtIteratorFila2(q); // tira ele da lista de aptos, pq ta executando
+       DeleteAtIteratorFila2(q); // tira ele da lista de aptos, pq ta executando
       // começa o contador de tempo!!!!!!!!
       printf("- o tid do first eh %d\n", first->tid);
       printf("- vai dar setcontext, se preparem!\n");
 
       startTimer();
-      setcontext(&(scheduler->executing->context)); // poe pra executar o novato
+      setcontext(&(first->context)); // poe pra executar o novato
       return 0;
     }
 
@@ -212,7 +271,7 @@ int csched_init() {
 
     mainThread->state = PROCST_CRIACAO; // preenche as parada da thread
     mainThread->prio = PRIORITY;
-    mainThread->tid = 0;
+    mainThread->tid = MAIN_THREAD_TID;
     mainThread->context = mainContext;
 
     threadNode->node = mainThread; // coloca a thread no PNODE

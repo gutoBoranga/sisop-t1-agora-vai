@@ -47,8 +47,8 @@ PFILA2 fila; // ponteiro para uma fila de threads bloqueadas no semáfo
 #define NAMES_SIZE 45
 #define ARGC 1  // funcoes sempre com um argumento (no max)
 
-#define MAIN_THREAD_TID 0 // tid da main � sempre 0
-#define PRIORITY 0 // prioridade � sempre 0
+#define MAIN_THREAD_TID 10 // tid da main � sempre 0
+#define PRIORITY 5 // prioridade � sempre 0
 
 #define ABLE_QUEUE 0  // codigo pra acessar a fila que quero listar
 #define BLOCKED_QUEUE 1
@@ -72,5 +72,6 @@ typedef struct s_SCHEDULER {
   int count;
   unsigned int executionTime;
 } SCHEDULER_t;
+
 
 #endif
