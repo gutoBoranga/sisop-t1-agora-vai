@@ -6,6 +6,9 @@
 void teste(void) {
   printf("\n\n> printou do teste!!!\n");
   cyield();
+  printf("voltou pro teste\n");
+  cyield();
+  printf("ultima vez no teste\n");
 }
 
 int main() {

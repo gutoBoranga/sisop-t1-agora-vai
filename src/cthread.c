@@ -17,6 +17,38 @@ int endingThread = 1;
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
+void timeManagement(unsigned int lastReading) {
+ 
+ TCB_t *current = scheduler->executing;
+  printf("vendo a prioridade da %d\n", current->tid);
+
+  printf("o tempo antes era de %u e agora foi %u\n", current->lastTime, lastReading);
+  if (current->lastTime == 0) { // primeira execuçao nao faz nada
+    current->prio = 0;
+    printf("deixou a prioridade como %u\n", current->prio);
+  }
+
+  else if (lastReading <= current->lastTime) { // a execucao anterior foi maior ou igual, entao aumenta a prio
+    if (current->prio < 3) {// só aumenta a prioridade se n for a maxima
+      printf("prioridade foi de %d pra %d \n", current->prio, current->prio++);
+      current->prio++;
+    }
+    else {
+      printf("deixou a prioridade em %d\n", current->prio);
+    }
+  }
+  else { // se nao diminui
+    if (current->prio > 0) {
+      printf("prioridade foi de %d pra %d \n", current->prio, current->prio--);
+      current->prio--;
+    }
+    else {
+      printf("deixou a prioridade no %d\n", current->prio);
+    }
+  }
+  current->lastTime = lastReading;
+}
+
 void list_threads(int queue) {
   
   printf("LISTA DAS THREADS NA FILA %i\n", queue);
@@ -158,6 +190,8 @@ int dispatcher() {
   
   endingThread = 1;
 
+  unsigned int elapsedTime = stopTimer();
+  timeManagement(elapsedTime);
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
   // estamos fingindo que a fila ja esta ordenada
@@ -214,6 +248,7 @@ int csched_init() {
     mainThread->prio = PRIORITY;
     mainThread->tid = 0;
     mainThread->context = mainContext;
+    mainThread->lastTime = 0;
 
     threadNode->node = mainThread; // coloca a thread no PNODE
     //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
@@ -314,6 +349,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
   newThread->tid = scheduler->count;
+  newThread->lastTime = 0;
   
   // mexe direto no contexto que tá dentro da thread
   getcontext(&newThread->context);

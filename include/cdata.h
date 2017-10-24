@@ -35,6 +35,7 @@ typedef struct s_TCB {
 	*/
 	struct s_TCB *waiting;
 	struct s_TCB *waitedby;
+  unsigned int lastTime;
 
 } TCB_t;
 
