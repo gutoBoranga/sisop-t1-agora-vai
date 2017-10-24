@@ -209,7 +209,8 @@ int dispatcher() {
   
   // tira a escolhida de aptos
   removeThreadFromFila(chosen_thread->tid, scheduler->able);
-  
+
+  printf("começou o timer\n");
   startTimer();
 
   // seta o contexto
@@ -392,7 +393,9 @@ int cyield(void) {
 
   // PARA O CONTADOR DE TEMPO
   unsigned int elapsedTime = stopTimer();
-  timeManagement(elapsedTime);
+  printf("parou o timer com tempo %u e vai somar com %u totalizando %u\n", elapsedTime, scheduler->executing->prio, scheduler->executing->prio+elapsedTime);
+  scheduler->executing->prio += elapsedTime;
+  //timeManagement(elapsedTime);
 
 
   PNODE2 executing = malloc(sizeof(PNODE2));
