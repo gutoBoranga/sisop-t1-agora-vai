@@ -165,9 +165,6 @@ TCB_t* choose_thread() {
       the_chosen_one = current_thread;
     }
     
-    //
-    // ALTERAR CRITERIO DE PRIORIDADE
-    //
     if (current_thread->prio < the_chosen_one->prio) {
       the_chosen_one = current_thread;
     }
@@ -179,7 +176,7 @@ TCB_t* choose_thread() {
     NextFila2(scheduler->able);
   }
   
-  printf("Thread escolhida: tid %i\n", the_chosen_one->tid);
+  printf("Thread escolhida: tid %i com prioridade %u\n", the_chosen_one->tid, the_chosen_one->prio);
   return the_chosen_one;
 }
 
@@ -193,6 +190,20 @@ int dispatcher() {
     // por causa do CJOIN
     
     printf("Parece que alguma thread acabou\n");
+
+    // verifica se tem alguem esperando pela que acabou
+    if (scheduler->executing->waitedby != NULL) {
+
+      // tira a thread que ta sendo esperada da fila de bloqueados e poe na de aptos
+      TCB_t *waiter = malloc(sizeof(TCB_t));
+      *waiter = *(scheduler->executing->waitedby); // salva a thread que tava nas bloqueadas
+      waiter->waiting = NULL; // diz que ela nao ta esperando mais ninguem
+      removeThreadFromFila(waiter->tid, scheduler->blocked); // remove da fila de bloqueados
+      AppendFila2(scheduler->able, waiter); // adiciona na fila de aptos
+      printf("a thread %d foi dos bloqueados pros aptos\n", waiter->tid);
+    }
+
+    else {} // nao precisa fazer nada se nao tem ninguem esperando
   }
   
   endingThread = 1;
@@ -202,6 +213,7 @@ int dispatcher() {
   // estamos fingindo que a fila ja esta ordenada
 
   TCB_t *chosen_thread;
+  printf("vai escolher a proxima thread\n");
   chosen_thread = choose_thread();
   
   // thread executando passa a ser a escolhida
@@ -491,14 +503,16 @@ int cjoin(int tid) {
 
     tcb = retorna_tcb(tid, filacerta); // pega o TCB da tid
 
-    if( (tcb->waitedby = NULL) && (chamou->waiting = NULL) )
+    if( (tcb->waitedby == NULL) && (chamou->waiting == NULL) )
     { /* Se o tcb passado como argumento não tiver ninguém esperando por ele E
       a thread que chamou não estiver esperando por ninguém
       */
      tcb->waitedby = chamou; // Pode fazer um encadeamento entre as duas threads
      chamou->waiting = tcb; // em uma relação de esperado-esperando
 
-    AppendFila2(scheduler->blocked, chamou); /* Quem chamou a cjoin passa a ser
+     PNODE2 chamouNode = malloc(sizeof(PNODE2));
+     chamouNode->node = chamou;
+    AppendFila2(scheduler->blocked, chamouNode); /* Quem chamou a cjoin passa a ser
     bloqueada.  */
 
     endingThread = 0;
