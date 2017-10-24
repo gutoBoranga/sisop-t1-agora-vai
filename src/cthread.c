@@ -20,7 +20,7 @@ SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois
 
 int greatestPriorityAtHead() {
 
-  PFILA2 q = scheduler->able;
+  PFILA2 q = &(scheduler->able);
   int greatestPriority = 0;
   int keepThread = 0;
 
@@ -273,6 +273,7 @@ int csched_init() {
     mainThread->prio = PRIORITY;
     mainThread->tid = MAIN_THREAD_TID;
     mainThread->context = mainContext;
+    mainThread->lastTime = 0;
 
     threadNode->node = mainThread; // coloca a thread no PNODE
     //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
@@ -402,6 +403,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->state = PROCST_CRIACAO;
   newThread->prio = PRIORITY;
   newThread->tid = scheduler->count;
+  newThread->lastTime = 0;
   
   // mexe direto no contexto que tá dentro da thread
   getcontext(&newThread->context);
