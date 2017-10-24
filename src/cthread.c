@@ -29,18 +29,21 @@ void timeManagement(unsigned int lastReading) {
   }
 
   else if (lastReading <= current->lastTime) { // a execucao anterior foi maior ou igual, entao aumenta a prio
-    if (current->prio < 3) {// só aumenta a prioridade se n for a maxima
-      printf("prioridade foi de %d pra %d \n", current->prio, current->prio++);
-      current->prio++;
+    if (current->prio > 0) {// só aumenta a prioridade se n for a maxima
+      printf("prioridade foi de %d ", current->prio);
+      current->prio--;
+      printf("pra %d\n", current->prio);
     }
     else {
       printf("deixou a prioridade em %d\n", current->prio);
     }
   }
   else { // se nao diminui
-    if (current->prio > 0) {
-      printf("prioridade foi de %d pra %d \n", current->prio, current->prio--);
-      current->prio--;
+    if (current->prio < 3) {
+      printf("prioridade foi de %d ", current->prio);
+      current->prio++;
+      printf("pra %d\n", current->prio);
+
     }
     else {
       printf("deixou a prioridade no %d\n", current->prio);
@@ -165,8 +168,12 @@ TCB_t* choose_thread() {
     //
     // ALTERAR CRITERIO DE PRIORIDADE
     //
-    if (current_thread->tid > the_chosen_one->tid) {
-        the_chosen_one = current_thread;
+    if (current_thread->prio < the_chosen_one->prio) {
+      the_chosen_one = current_thread;
+    }
+
+    else if (current_thread->prio == the_chosen_one->prio && current_thread->tid < the_chosen_one->tid) { // segundo criterio é o tid em ordem crescente
+      the_chosen_one = current_thread;
     }
     
     NextFila2(scheduler->able);
@@ -190,8 +197,6 @@ int dispatcher() {
   
   endingThread = 1;
 
-  unsigned int elapsedTime = stopTimer();
-  timeManagement(elapsedTime);
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
   // estamos fingindo que a fila ja esta ordenada
@@ -205,6 +210,8 @@ int dispatcher() {
   // tira a escolhida de aptos
   removeThreadFromFila(chosen_thread->tid, scheduler->able);
   
+  startTimer();
+
   // seta o contexto
   setcontext(&(scheduler->executing->context)); // poe pra executar o novato
   
@@ -246,7 +253,7 @@ int csched_init() {
 
     mainThread->state = PROCST_CRIACAO; // preenche as parada da thread
     mainThread->prio = PRIORITY;
-    mainThread->tid = 0;
+    mainThread->tid = MAIN_THREAD_TID;
     mainThread->context = mainContext;
     mainThread->lastTime = 0;
 
@@ -254,6 +261,9 @@ int csched_init() {
     //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
     scheduler->executing = mainThread; // main que ta executando
     scheduler->count++;
+
+
+    startTimer(); // começa a contar o tempo da main
 
     return 0;
   }
@@ -379,8 +389,11 @@ int cyield(void) {
   
   printf("\n[ CYIELD ]\n");
 
+
   // PARA O CONTADOR DE TEMPO
-  //setcontext(&(scheduler->dispatcherContext));
+  unsigned int elapsedTime = stopTimer();
+  timeManagement(elapsedTime);
+
 
   PNODE2 executing = malloc(sizeof(PNODE2));
   executing->node = scheduler->executing;
@@ -392,13 +405,6 @@ int cyield(void) {
   // vai pro contexto do dispatcher e salva o estado da thread que estava executando
   swapcontext(&(scheduler->executing->context), &(scheduler->dispatcherContext));
 }
-
-
-/*
-int cjoin(int tid);
-int cwait(csem_t *sem);
-int csignal(csem_t *sem);
-*/
 
 /* Editado por Octavio Arruda */
 

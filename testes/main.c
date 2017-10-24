@@ -5,6 +5,7 @@
 
 void teste(void) {
   printf("\n\n> printou do teste!!!\n");
+  int i = 0;
   cyield();
   printf("voltou pro teste\n");
   cyield();
@@ -13,7 +14,7 @@ void teste(void) {
 
 int main() {
 
-
+  cyield();
   void *(*fPointer)(void *) = &teste;
   void *x;
   ccreate(fPointer, x, 0);
@@ -21,6 +22,17 @@ int main() {
   
   printf("\n\n> main depois de ccriar 2 thread maluka\n");
   cyield();
+  int i = 0;
+  while(i<1000000)
+    i++;
+  i = 0;
+
+  while(i<1000000)
+    i++;
+  i = 0;
+  
+  while(i<1000000)
+    i++;
   printf("\n\n> voltou pra main!!!\n");
   cyield();
   printf("\n\n> Até mais e obrigado pelos peixes\n\n\n");
