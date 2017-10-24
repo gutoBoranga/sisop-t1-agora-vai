@@ -4,8 +4,7 @@
 
 
 void teste(void) {
-
-  printf("printou do teste!!!\n");
+  printf("\n\n> printou do teste!!!\n");
   cyield();
 }
 
@@ -15,14 +14,12 @@ int main() {
   void *(*fPointer)(void *) = &teste;
   void *x;
   ccreate(fPointer, x, 0);
-  // ccreate(fPointer, x, 0);
+  ccreate(fPointer, x, 0);
   
-  // printf("ccreate ok\n");
-  //list_threads(ABLE_QUEUE);
-  // printf("list_able ok\n");
+  printf("\n\n> main depois de ccriar 2 thread maluka\n");
   cyield();
-  // printf("voltou pra main!!!\n");
-  // cyield();
+  printf("\n\n> voltou pra main!!!\n");
+  cyield();
   printf("\n\n> Até mais e obrigado pelos peixes\n\n\n");
   
   return 0;
