@@ -17,11 +17,11 @@ void teste9(void) {
 }
 
 void ateste(void){
-  print("ateste novo");
+  printf("ateste novo");
   cyield();
-  print("oq? cyied, mas já vai? ah bom");
+  printf("oq? cyied, mas já vai? ah bom");
   cyield();
-  print("demorei mas voltei rápido");
+  printf("demorei mas voltei rápido");
   cjoin(2);
 }
 
