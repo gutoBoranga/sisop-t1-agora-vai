@@ -30,8 +30,9 @@ void ateste(void){
 }
 
 void terceira(void){
-  printf("alguem vai esperar esse bb");
+  printf("alguem vai esperar esse bb\nSLEEP CHEGANDO, ESPERA SAPORRA");
   sleep(10);
+  printf("dormiu");
 }
 
 int main() {
