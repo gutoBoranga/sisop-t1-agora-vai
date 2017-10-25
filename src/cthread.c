@@ -17,44 +17,9 @@ int endingThread = 1;
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
-void timeManagement(unsigned int lastReading) {
- 
- TCB_t *current = scheduler->executing;
-  printf("vendo a prioridade da %d\n", current->tid);
-
-  printf("o tempo antes era de %u e agora foi %u\n", current->lastTime, lastReading);
-  if (current->lastTime == 0) { // primeira execuçao nao faz nada
-    current->prio = 0;
-    printf("deixou a prioridade como %u\n", current->prio);
-  }
-
-  else if (lastReading <= current->lastTime) { // a execucao anterior foi maior ou igual, entao aumenta a prio
-    if (current->prio > 0) {// só aumenta a prioridade se n for a maxima
-      printf("prioridade foi de %d ", current->prio);
-      current->prio--;
-      printf("pra %d\n", current->prio);
-    }
-    else {
-      printf("deixou a prioridade em %d\n", current->prio);
-    }
-  }
-  else { // se nao diminui
-    if (current->prio < 3) {
-      printf("prioridade foi de %d ", current->prio);
-      current->prio++;
-      printf("pra %d\n", current->prio);
-
-    }
-    else {
-      printf("deixou a prioridade no %d\n", current->prio);
-    }
-  }
-  current->lastTime = lastReading;
-}
-
 void list_threads(int queue) {
   
-  printf("LISTA DAS THREADS NA FILA %i\n", queue);
+  printf("\n=== Threads na fila %i ===\n", queue);
   PFILA2 q;
   PNODE2 currentNode;
   TCB_t *currentThread;
@@ -71,95 +36,35 @@ void list_threads(int queue) {
     while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
       currentNode = (PNODE2) GetAtIteratorFila2(q);
       currentThread = (TCB_t*) currentNode->node;
-      printf("tid: %d\n", currentThread->tid);
+      
+      printf("Tid: %i\n", currentThread->tid);
+      
       NextFila2(q);
     }
   }
 
   else {
-    printf("lista vazia ou invalida\n");
+    printf("fila vazia ou invalida\n");
   }
 
   FirstFila2(q);  // volta pro inicio da fila
 }
 
-void firstAtBeggining() {
-
-  printf("vai ordenar\n");
-  PFILA2 q = scheduler->able;
-  PFILA2 greatest;
-
-  int i = 0, greatestTid = -1, found = 0, end = 0, greatest_tid_only_if_this_is_the_only_thread_available = -1;
-  TCB_t *currentThread, *greatestThread;
-  PNODE2 currentNode, greatestNode;
-
-  
-  FirstFila2(scheduler->able);
-  while (GetAtIteratorFila2(scheduler->able) != NULL) {
-    currentNode = (PNODE2) GetAtIteratorFila2(scheduler->able);
-    currentThread = (TCB_t*) currentNode->node;
-    
-    printf("vendo o tid %d\n", currentThread->tid);
-    
-    if (currentThread->tid > greatestTid) {
-      if (currentThread->tid == scheduler->executing->tid) {
-        // se o tid da currentThread for o que """"está executando""""
-        // ele não pode ser escolhido a menos que seja a unica thread
-        greatest_tid_only_if_this_is_the_only_thread_available = currentThread->tid;
-      } else {
-        // senão, o tid pode ser escolhido
-        greatestTid = currentThread->tid;
-        greatestThread = currentThread;
-        greatest = scheduler->able;
-      }
-    }
-    
-    NextFila2(scheduler->able);
-  }
-  
-  if (greatestTid = -1) {
-    // se não achou nenhuma thread além da que está executando, vai essa mesmo né, paciência
-    greatestTid = greatest_tid_only_if_this_is_the_only_thread_available;
-  }
-
-  FirstFila2(scheduler->able);
-  while (GetAtIteratorFila2(q) != NULL && !found) { // iterador no primeiro elemento
-    currentNode = (PNODE2) GetAtIteratorFila2(scheduler->able);
-    currentThread = (TCB_t*) currentNode->node;
-    printf("vendo o tid %d\n", currentThread->tid);
-    if (currentThread->tid == greatestTid) {
-      DeleteAtIteratorFila2(scheduler->able);
-      found = 1;
-    }
-    NextFila2(scheduler->able);
-  }
-  
-  greatestNode = malloc(sizeof(PNODE2));
-  greatestNode->node = greatestThread;
-  
-  // se a fila estiver vazia
-  if (FirstFila2(scheduler->able)) {
-    AppendFila2(scheduler->able, greatestNode);
-  } else {
-    InsertBeforeIteratorFila2(scheduler->able, greatestNode); // poe o elemento novo no inicio
-  }
-}
-
-// ESCOLHE THREAD MAIS TOP
 TCB_t* choose_thread() {
   PNODE2 current_node;
   TCB_t *current_thread;
   TCB_t *the_chosen_one = NULL;
 
-  list_threads(ABLE_QUEUE);
   // se deu erro, retorna NULL
   if (FirstFila2(scheduler->able) != 0) {
     return NULL;
   }
   
   while (GetAtIteratorFila2(scheduler->able) != NULL) { // iterador no primeiro elemento
+    
     current_node = (PNODE2) GetAtIteratorFila2(scheduler->able);
     current_thread = (TCB_t*) current_node->node;
+    
     // na primeira vez que executar, pra nao dar erro ao acessar o tid de algo que aponta pra NULL
     if (the_chosen_one == NULL) {
       the_chosen_one = current_thread;
@@ -176,20 +81,14 @@ TCB_t* choose_thread() {
     NextFila2(scheduler->able);
   }
   
-  printf("Thread escolhida: tid %i com prioridade %u\n", the_chosen_one->tid, the_chosen_one->prio);
   return the_chosen_one;
 }
 
 int dispatcher() {
-  // printf("\n\nentrando no dispatcher (leia-se \"TÔ CHEGANDO NA COHAB\")\n");
   printf("\n[ DISPATCHER ]\n");
   
   // se chegou aqui porque uma thread acabou
   if (endingThread) {
-    // aqui tem que checar se tem alguma thread esperando a atual acabar
-    // por causa do CJOIN
-    
-    printf("Parece que alguma thread acabou\n");
 
     // verifica se tem alguem esperando pela que acabou
     if (scheduler->executing->waitedby != NULL) {
@@ -204,8 +103,6 @@ int dispatcher() {
 
       waiterNode->node = waiter;
       AppendFila2(scheduler->able, waiterNode); // adiciona na fila de aptos
-      printf("a thread %d foi dos bloqueados pros aptos\n", waiter->tid);
-      list_threads(ABLE_QUEUE);
     }
 
     else {} // nao precisa fazer nada se nao tem ninguem esperando
@@ -215,10 +112,8 @@ int dispatcher() {
 
   // para o contador de tempo // _______ CHAMANDO ATENÇAO PRA COISAS FALTANDO
 
-  // estamos fingindo que a fila ja esta ordenada
-
+  // escolhe thread que vai ganhar o processador
   TCB_t *chosen_thread;
-  printf("vai escolher a proxima thread\n");
   chosen_thread = choose_thread();
   
   // thread executando passa a ser a escolhida
@@ -226,8 +121,8 @@ int dispatcher() {
   
   // tira a escolhida de aptos
   removeThreadFromFila(chosen_thread->tid, scheduler->able);
-
-  printf("começou o timer\n");
+  
+  // começa a contar o tempo
   startTimer();
 
   // seta o contexto
@@ -238,7 +133,6 @@ int dispatcher() {
 
 int csched_init() {
   printf("\n\n[ INIT ]\n");
-  printf("iniciando o scheduler!\n");
 
   scheduler = malloc(sizeof(SCHEDULER_t));
 
@@ -277,13 +171,11 @@ int csched_init() {
     mainThread->waitedby = NULL;
     mainThread->waitedby = NULL;
 
-    threadNode->node = mainThread; // coloca a thread no PNODE
-    //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
     scheduler->executing = mainThread; // main que ta executando
     scheduler->count++;
-
-
-    startTimer(); // começa a contar o tempo da main
+    
+    // começa a contar o tempo da main
+    startTimer();
 
     return 0;
   }
@@ -366,12 +258,10 @@ int cidentify (char *name, int size) {
 
 int ccreate (void* (*start)(void*), void *arg, int prio) {
 
-  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
-    printf("scheduler nulo: bora inicializa essa merda\n");
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, inicializa
     csched_init();
   }
 
-  // aqui é a nova thread
   printf("\n[ CCREATE ]\n");
     
   TCB_t *newThread = malloc(sizeof(TCB_t));
@@ -404,8 +294,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 
 int cyield(void) {
   
-  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
-    printf("scheduler nulo: bora inicializa essa merda\n");
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, inicializa
     csched_init();
   }
   
@@ -414,7 +303,6 @@ int cyield(void) {
 
   // PARA O CONTADOR DE TEMPO
   unsigned int elapsedTime = stopTimer();
-  printf("parou o timer com tempo %u e vai somar com %u totalizando %u\n", elapsedTime, scheduler->executing->prio, scheduler->executing->prio+elapsedTime);
   scheduler->executing->prio += elapsedTime;
   //timeManagement(elapsedTime);
 
@@ -423,7 +311,6 @@ int cyield(void) {
   executing->node = scheduler->executing;
   AppendFila2(scheduler->able, executing); // coloca na fila de aptos quem ta pronto
 
-  // printf("o tid %d ta liberando e vai chamar o dispatcher\n", scheduler->executing->tid);
   endingThread = 0;
   
   // vai pro contexto do dispatcher e salva o estado da thread que estava executando
@@ -467,8 +354,8 @@ TCB_t *retorna_tcb(int tid, PFILA2 fila){ /* É necessário ter certeza de que a
 
 
 int csem_init(csem_t *sem, int count){
-  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, manda bala
-    printf("scheduler nulo: bora inicializa essa merda\n");
+  
+  if (scheduler == NULL) {  // se ainda nao inicializou o scheduler, inicializa
     csched_init();
   }
 
@@ -501,11 +388,7 @@ int cjoin(int tid) {
   if(chamou->waiting != NULL) return ERROR; /* se quem fez cjoin já tá esperando
   retorna código de erro */
   
-  printf("Tid pra esperar: %i\n", tid);
-  list_threads(ABLE_QUEUE);
-  
   if(threadIsInFila(tid, filaaptos) == TRUE) {
-    printf("tá nos aptos \\o/\n");
     /* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
@@ -645,8 +528,4 @@ int cwait (csem_t *sem) {
   
     return SUCCESS;
   }
-}
-
-void teste2() {
-  // setcontext(&(scheduler->dispatcherContext));
 }
