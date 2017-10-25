@@ -16,36 +16,29 @@ void teste9(void) {
   printf("entrou no teste\n");
 }
 
+void ateste(void){
+  print("ateste novo");
+  cyield();
+  print("oq? cyied, mas já vai? ah bom");
+  cyield();
+  print("demorei mas voltei rápido");
+  cjoin(2);
+}
+
 int main() {
 
-  /*cyield();
-  void *(*fPointer)(void *) = &teste;
-  void *x;
-  ccreate(fPointer, x, 0);
-  ccreate(fPointer, x, 0);
-  
-  printf("\n\n> main depois de ccriar 2 thread maluka\n");
-  cyield();
-  int i = 0;
-  while(i<1000000)
-    i++;
-  i = 0;
 
-  while(i<1000000)
-    i++;
-  i = 0;
-  
-  while(i<1000000)
-    i++;
-  printf("\n\n> voltou pra main!!!\n");
-  cyield();
-  printf("\n\n> Até mais e obrigado pelos peixes\n\n\n");*/
 
   printf("ta na main\n");
   void *(*fPointer)(void *) = &teste9;
   void *x;
+
+  void *(*aPointer)(void*) = &ateste;
+  void *y;
+
   ccreate(fPointer, x, 0);
+  ccreate(aPointer, y, 0);
   cjoin(1);
-  printf("dael\n");
+  printf("dale\n");
   return 0;
 }
