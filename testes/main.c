@@ -28,6 +28,10 @@ void ateste(void){
   cjoin(2);
 }
 
+void terceira(void){
+  printf("alguem vai esperar esse bb");
+}
+
 int main() {
 
 
@@ -39,8 +43,12 @@ int main() {
   void *(*aPointer)(void*) = &ateste;
   void *y;
 
+  void *(*tPointer)(void*) = &terceira;
+  void *z;
+
   ccreate(fPointer, x, 0);
   ccreate(aPointer, y, 0);
+  ccreate(tPointer, z, 0);
 
   teste();
   ateste();
