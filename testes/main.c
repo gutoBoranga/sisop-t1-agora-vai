@@ -31,6 +31,7 @@ void ateste(void){
 
 void terceira(void){
   printf("alguem vai esperar esse bb\nSLEEP CHEGANDO, ESPERA SAPORRA");
+  cyield();
   sleep(10);
   printf("dormiu");
 }
