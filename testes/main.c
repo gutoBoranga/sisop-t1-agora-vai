@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cthread.h>
 #include <cdata.h>
+#include <unistd.h>
 
 
 void teste(void) {
@@ -30,6 +31,7 @@ void ateste(void){
 
 void terceira(void){
   printf("alguem vai esperar esse bb");
+  sleep(10);
 }
 
 int main() {
