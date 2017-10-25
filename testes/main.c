@@ -38,6 +38,9 @@ int main() {
 
   ccreate(fPointer, x, 0);
   ccreate(aPointer, y, 0);
+
+  ateste();
+  
   cjoin(1);
   printf("dale\n");
   return 0;
