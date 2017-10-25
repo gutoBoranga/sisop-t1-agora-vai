@@ -22,7 +22,7 @@ void ateste(void){
   /* testezinho pra fazer 2 yield e um cjoin em ninguém... */
   printf("se o cara fica dando cyield eu tenho que executar");
   cyield();
-  i = 0;
+  int i = 0;
   for (i = 0; i< 1000000000000000; i++);
 
   printf("um loopzinho pra ele ficar serenity");
