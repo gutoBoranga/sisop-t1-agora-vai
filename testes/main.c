@@ -46,6 +46,6 @@ int main() {
   void *x;
   ccreate(fPointer, x, 0);
   cjoin(1);
-  
+  printf("dael\n");
   return 0;
 }

@@ -150,7 +150,8 @@ TCB_t* choose_thread() {
   PNODE2 current_node;
   TCB_t *current_thread;
   TCB_t *the_chosen_one = NULL;
-  
+
+  list_threads(ABLE_QUEUE);
   // se deu erro, retorna NULL
   if (FirstFila2(scheduler->able) != 0) {
     return NULL;
@@ -159,7 +160,6 @@ TCB_t* choose_thread() {
   while (GetAtIteratorFila2(scheduler->able) != NULL) { // iterador no primeiro elemento
     current_node = (PNODE2) GetAtIteratorFila2(scheduler->able);
     current_thread = (TCB_t*) current_node->node;
-    
     // na primeira vez que executar, pra nao dar erro ao acessar o tid de algo que aponta pra NULL
     if (the_chosen_one == NULL) {
       the_chosen_one = current_thread;
@@ -196,11 +196,16 @@ int dispatcher() {
 
       // tira a thread que ta sendo esperada da fila de bloqueados e poe na de aptos
       TCB_t *waiter = malloc(sizeof(TCB_t));
+      PNODE2 waiterNode = malloc(sizeof(PNODE2));
+      
       *waiter = *(scheduler->executing->waitedby); // salva a thread que tava nas bloqueadas
       waiter->waiting = NULL; // diz que ela nao ta esperando mais ninguem
       removeThreadFromFila(waiter->tid, scheduler->blocked); // remove da fila de bloqueados
-      AppendFila2(scheduler->able, waiter); // adiciona na fila de aptos
+
+      waiterNode->node = waiter;
+      AppendFila2(scheduler->able, waiterNode); // adiciona na fila de aptos
       printf("a thread %d foi dos bloqueados pros aptos\n", waiter->tid);
+      list_threads(ABLE_QUEUE);
     }
 
     else {} // nao precisa fazer nada se nao tem ninguem esperando
@@ -522,7 +527,6 @@ int cjoin(int tid) {
     PNODE2 node = malloc(sizeof(PNODE2));
     node->node = chamou;
     AppendFila2(scheduler->blocked, node); /* Quem chamou a cjoin passa a ser
->>>>>>> 7b22231893c2c4c9493fb4328132a59df4eaa482
     bloqueada.  */
 
     endingThread = 0;
