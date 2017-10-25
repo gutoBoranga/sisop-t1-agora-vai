@@ -26,12 +26,12 @@ void ateste(void){
   cyield();
   printf("demorei mas voltei rapido");
   cjoin(2);
-  print("um cjoin random em ngm");
+  printf("um cjoin random em ngm");
 }
 
 void terceira(void){
   cyield();
-  print(" terceira funcao teste ");
+  printf(" terceira funcao teste ");
 }
 
 
