@@ -36,4 +36,11 @@ test-semaforo:
 	gcc -g testes/semaforo.c -I include -L lib -lcthread -o testes/semaforo
 	./testes/semaforo
 	
+run:
+	gcc -g testes/${FILE}.c -I include -L lib -lcthread -o testes/${FILE}
+	./testes/${FILE}
+	
+exemplo:
+	gcc -g exemplos/${FILE}.c -I include -L lib -lcthread -o exemplos/${FILE}
+	./exemplos/${FILE}
 #	valgrind --leak-check=yes ./testes/main

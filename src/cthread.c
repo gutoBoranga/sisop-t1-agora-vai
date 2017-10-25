@@ -24,15 +24,6 @@ void list_threads(PFILA2 q) {
   
   printf("\n=== Threads na fila ===\n");
   
-  //
-  // if (queue == ABLE_QUEUE) {
-  //   q = scheduler->able;
-  // }
-  //
-  // else {
-  //   q = scheduler->blocked;
-  // }
-  
   if (FirstFila2(q) == 0) {
     while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
       currentNode = (PNODE2) GetAtIteratorFila2(q);
@@ -86,7 +77,7 @@ TCB_t* choose_thread() {
 }
 
 int dispatcher() {
-  printf("\n[ DISPATCHER ]\n");
+  // printf("\n[ DISPATCHER ]\n");
   
   // se chegou aqui porque uma thread acabou
   if (endingThread) {
@@ -133,7 +124,7 @@ int dispatcher() {
 }
 
 int csched_init() {
-  printf("\n\n[ INIT ]\n");
+  // printf("\n\n[ INIT ]\n");
 
   scheduler = malloc(sizeof(SCHEDULER_t));
 
@@ -263,7 +254,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
     csched_init();
   }
 
-  printf("\n[ CCREATE ]\n");
+  // printf("\n[ CCREATE ]\n");
     
   TCB_t *newThread = malloc(sizeof(TCB_t));
   
@@ -299,7 +290,7 @@ int cyield(void) {
     csched_init();
   }
   
-  printf("\n[ CYIELD ]\n");
+  // printf("\n[ CYIELD ]\n");
 
 
   // PARA O CONTADOR DE TEMPO
@@ -375,7 +366,7 @@ int csem_init(csem_t *sem, int count){
 
 int cjoin(int tid) {
   
-  printf("\n[ CJOIN ]\n");
+  // printf("\n[ CJOIN ]\n");
 
   PFILA2 filaaptos = scheduler->able;
   PFILA2 filabloqueados = scheduler->blocked;
@@ -433,22 +424,17 @@ int cjoin(int tid) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int csignal (csem_t *sem) {
-  printf("\n\n[ CSIGNAL ]\n");
+  // printf("\n\n[ CSIGNAL ]\n");
   
   sem->count++;
-  printf("-> count: %i\n", sem->count);
-
 
   // se sem está livre, não tem ninguém bloqueado. Portanto, retorna dizendo que foi tudo ok.
   if (sem->count > 0) {
-    printf("-> não tinha ninguém bloqueado aqui\n");
     return SUCCESS;
   }
 
   // se sem está ocupado:
   else {
-    printf("-> ihh, tinha gente esperando\n");
-    
     TCB_t* thread;
     
     // pega o primeiro da fila
@@ -463,19 +449,14 @@ int csignal (csem_t *sem) {
     
     // tenta remover dos bloqueados. Se não encontrar a thread lá, retorna erro
     if (!removeThreadFromFila(thread->tid, scheduler->blocked)) {
-      printf("-> erro ao tentar desbloquear thread %i\n", thread->tid);
       return ERROR;
     }
-    
-    printf("-> desbloqueei a thread %i\n", thread->tid);
     
     // adiciona na fila dos aptos
     PNODE2 node = malloc(sizeof(PNODE2));
     node->node = thread;
     AppendFila2(scheduler->able, node);
     
-    printf("-> botei a thread %i nos aptos\n", thread->tid);
-
     return SUCCESS;
   }
 }
@@ -492,22 +473,17 @@ int csignal (csem_t *sem) {
 // Retorno: Quando executada corretamente: retorna SUCCESS (0) Caso contrário, retorna ERROR (-1).
 
 int cwait (csem_t *sem) {
-  printf("\n\n[ CWAIT ]\n");
+  // printf("\n\n[ CWAIT ]\n");
   
   sem->count--;
   
-  printf("-> count: %i\n", sem->count);
-  
   // se sem está livre:
   if (sem->count >= 0) {
-    // tem que fazer algo mais aqui?
-    printf("-> estava livre, agora está ocupado\n");
     return SUCCESS;
   }
   
   // se sem está ocupado:
   else {
-    printf("-> tem gente\n");
     
     if (sem->fila == NULL) {
       return ERROR;
@@ -521,8 +497,6 @@ int cwait (csem_t *sem) {
     node->node = thread;
     AppendFila2(sem->fila, node);
     
-    printf("meteu na fila da sinaleira\n");
-  
     // adiciona thread executando na fila de blocked
     AppendFila2(scheduler->blocked, node);
     
