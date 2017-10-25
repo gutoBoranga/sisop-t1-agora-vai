@@ -20,13 +20,12 @@ void teste9(void) {
 
 void ateste(void){
   /* testezinho pra fazer 2 yield e um cjoin em ninguém... */
-  printf("ateste novo");
+  printf("se o cara fica dando cyield eu tenho que executar");
   cyield();
-  printf("oq? cyield, mas ja vai? ah bom");
-  cyield();
-  printf("demorei mas voltei rapido");
-  cjoin(2);
-  printf("um cjoin random em ngm");
+  int i = 0;
+  for (i = 0; i< 1000000000000000; i++);
+
+  printf("um loopzinho pra ele ficar serenity");
 }
 
 void terceira(void){
@@ -43,7 +42,7 @@ int main() {
   void *(*fPointer)(void *) = &teste9;
   void *x;
 
-  void *(*aPointer)(void*) = &ateste;
+  void *(*aPointer)(void*) = &ateste; // tid = 1
   void *y;
 
   void *(*tPointer)(void*) = &terceira;
@@ -54,7 +53,7 @@ int main() {
   ccreate(tPointer, z, 0);
 
   teste();
-  ateste();
+
 
   cjoin(1);
   printf("dale\n");
