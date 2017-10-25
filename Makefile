@@ -24,7 +24,7 @@ clean:
 	cp lib/support.o bin/
 	rm -rf lib/*
 
-test:
+test-main:
 	gcc -g testes/main.c -I include -L lib -lcthread -o testes/main
 	./testes/main
 
@@ -36,11 +36,10 @@ test-semaforo:
 	gcc -g testes/semaforo.c -I include -L lib -lcthread -o testes/semaforo
 	./testes/semaforo
 	
-run:
+test:
 	gcc -g testes/${FILE}.c -I include -L lib -lcthread -o testes/${FILE}
 	./testes/${FILE}
 	
 exemplo:
 	gcc -g exemplos/${FILE}.c -I include -L lib -lcthread -o exemplos/${FILE}
 	./exemplos/${FILE}
-#	valgrind --leak-check=yes ./testes/main
