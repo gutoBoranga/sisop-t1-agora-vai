@@ -10,6 +10,8 @@ void teste(void) {
   printf("voltou pro teste\n");
   cyield();
   printf("ultima vez no teste\n");
+  cjoin(1);
+  printf("sera que faz um cjoin na ateste dos parceiro?");
 }
 
 void teste9(void) {
@@ -17,11 +19,12 @@ void teste9(void) {
 }
 
 void ateste(void){
+  /* testezinho pra fazer 2 yield e um cjoin em ninguém... */
   printf("ateste novo");
   cyield();
-  printf("oq? cyied, mas já vai? ah bom");
+  printf("oq? cyield, mas ja vai? ah bom");
   cyield();
-  printf("demorei mas voltei rápido");
+  printf("demorei mas voltei rapido");
   cjoin(2);
 }
 
@@ -39,8 +42,9 @@ int main() {
   ccreate(fPointer, x, 0);
   ccreate(aPointer, y, 0);
 
+  teste();
   ateste();
-  
+
   cjoin(1);
   printf("dale\n");
   return 0;
