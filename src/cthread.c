@@ -491,32 +491,42 @@ int cjoin(int tid) {
 
   if(chamou->waiting != NULL) return ERROR; /* se quem fez cjoin já tá esperando
   retorna código de erro */
-
-  if(threadIsInFila(tid, filaaptos) == TRUE){/* Se a thread que foi passada
+  
+  printf("Tid pra esperar: %i\n", tid);
+  list_threads(ABLE_QUEUE);
+  
+  if(threadIsInFila(tid, filaaptos) == TRUE) {
+    printf("tá nos aptos \\o/\n");
+    /* Se a thread que foi passada
     como argumento pela cjoin já estiver na fila de threads, basta checar se ela
     já possui uma thread associada a ela(waited ou waiting).*/
     filacerta = filaaptos;
-    } else if(threadIsInFila(tid, filabloqueados) == TRUE){
-      filacerta = filabloqueados; /* filacerta é a fila em que a tid está:
+    
+  } else if(threadIsInFila(tid, filabloqueados) == TRUE) {
+      /* filacerta é a fila em que a tid está:
       ou filabloqueados ou filaaptos. */
-    }else return ERROR; // se não estiver em nenhuma das duas, retorna erro
+      filacerta = filabloqueados;
+      
+      // se não estiver em nenhuma das duas, retorna erro
+  } else return ERROR;
 
-    tcb = retorna_tcb(tid, filacerta); // pega o TCB da tid
-
-    if( (tcb->waitedby == NULL) && (chamou->waiting == NULL) )
-    { /* Se o tcb passado como argumento não tiver ninguém esperando por ele E
-      a thread que chamou não estiver esperando por ninguém
-      */
-     tcb->waitedby = chamou; // Pode fazer um encadeamento entre as duas threads
-     chamou->waiting = tcb; // em uma relação de esperado-esperando
-
-     PNODE2 chamouNode = malloc(sizeof(PNODE2));
-     chamouNode->node = chamou;
-    AppendFila2(scheduler->blocked, chamouNode); /* Quem chamou a cjoin passa a ser
+  tcb = retorna_tcb(tid, filacerta); // pega o TCB da tid
+    
+  if( (tcb->waitedby == NULL) && (chamou->waiting == NULL) ) {
+    /* Se o tcb passado como argumento não tiver ninguém esperando por ele E
+    a thread que chamou não estiver esperando por ninguém
+    */
+    tcb->waitedby = chamou; // Pode fazer um encadeamento entre as duas threads
+    chamou->waiting = tcb; // em uma relação de esperado-esperando
+    
+    PNODE2 node = malloc(sizeof(PNODE2));
+    node->node = chamou;
+    AppendFila2(scheduler->blocked, node); /* Quem chamou a cjoin passa a ser
+>>>>>>> 7b22231893c2c4c9493fb4328132a59df4eaa482
     bloqueada.  */
 
     endingThread = 0;
-    
+  
     swapcontext(&(scheduler->executing->context), &(scheduler->dispatcherContext));
 
     return SUCCESS;
