@@ -29,6 +29,10 @@ void ateste(void){
   print("um cjoin random em ngm");
 }
 
+void terceira(void){
+  cyield();
+  print(" terceira funcao teste ");
+}
 
 
 int main() {
