@@ -274,6 +274,8 @@ int csched_init() {
     mainThread->tid = MAIN_THREAD_TID;
     mainThread->context = mainContext;
     mainThread->lastTime = 0;
+    mainThread->waitedby = NULL;
+    mainThread->waitedby = NULL;
 
     threadNode->node = mainThread; // coloca a thread no PNODE
     //    AppendFila2(scheduler->able, threadNode); // vai pra fila de aptos
@@ -378,6 +380,8 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
   newThread->prio = PRIORITY;
   newThread->tid = scheduler->count;
   newThread->lastTime = 0;
+  newThread->waitedby = NULL;
+  newThread->waiting = NULL;
   
   // mexe direto no contexto que tá dentro da thread
   getcontext(&newThread->context);
