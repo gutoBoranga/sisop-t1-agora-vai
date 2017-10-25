@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <cthread.h>
 #include <cdata.h>
-#include <unistd.h>
 
 
 void teste(void) {
@@ -29,12 +28,7 @@ void ateste(void){
   cjoin(2);
 }
 
-void terceira(void){
-  printf("alguem vai esperar esse bb\nSLEEP CHEGANDO, ESPERA SAPORRA");
-  cyield();
-  sleep(10);
-  printf("dormiu");
-}
+
 
 int main() {
 
@@ -51,8 +45,8 @@ int main() {
   void *z;
 
   ccreate(fPointer, x, 0);
-  ccreate(aPointer, y, 0);
-  ccreate(tPointer, z, 0);
+  ccreate(aPointer, x, 0);
+  ccreate(tPointer, x, 0);
 
   teste();
   ateste();
