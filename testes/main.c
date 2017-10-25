@@ -46,8 +46,8 @@ int main() {
   void *z;
 
   ccreate(fPointer, x, 0);
-  ccreate(aPointer, x, 0);
-  ccreate(tPointer, x, 0);
+  ccreate(aPointer, y, 0);
+  ccreate(tPointer, z, 0);
 
   teste();
   ateste();
