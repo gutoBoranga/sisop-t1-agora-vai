@@ -43,7 +43,6 @@ void* print_the_name_of_the_integrants_of_klb(void) {
   printf("> Bruno\n\n");
   
   csignal(&sinaleira);
-  csignal(&sinaleira);
   
   return NULL;
 }
