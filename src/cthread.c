@@ -17,20 +17,21 @@ int endingThread = 1;
 
 SCHEDULER_t *scheduler; // acho que isso nao precisa ser um ponteiro, mas depois a gente se preocupa com isso
 
-void list_threads(int queue) {
+void list_threads(PFILA2 q) {
   
-  printf("\n=== Threads na fila %i ===\n", queue);
-  PFILA2 q;
   PNODE2 currentNode;
   TCB_t *currentThread;
-
-  if (queue == ABLE_QUEUE) {
-    q = scheduler->able;
-  }
-
-  else {
-    q = scheduler->blocked;
-  }
+  
+  printf("\n=== Threads na fila ===\n");
+  
+  //
+  // if (queue == ABLE_QUEUE) {
+  //   q = scheduler->able;
+  // }
+  //
+  // else {
+  //   q = scheduler->blocked;
+  // }
   
   if (FirstFila2(q) == 0) {
     while (GetAtIteratorFila2(q) != NULL) { // iterador no primeiro elemento
@@ -434,9 +435,9 @@ int cjoin(int tid) {
 int csignal (csem_t *sem) {
   printf("\n\n[ CSIGNAL ]\n");
   
-  printf("-> count: %i\n", sem->count);
   sem->count++;
   printf("-> count: %i\n", sem->count);
+
 
   // se sem está livre, não tem ninguém bloqueado. Portanto, retorna dizendo que foi tudo ok.
   if (sem->count > 0) {
@@ -456,6 +457,9 @@ int csignal (csem_t *sem) {
     PNODE2 blocked_node;
     blocked_node = GetAtIteratorFila2(sem->fila);
     thread = (TCB_t *) blocked_node->node;
+    
+    // remove da fila do semáforo
+    DeleteAtIteratorFila2(sem->fila);
     
     // tenta remover dos bloqueados. Se não encontrar a thread lá, retorna erro
     if (!removeThreadFromFila(thread->tid, scheduler->blocked)) {
@@ -490,20 +494,20 @@ int csignal (csem_t *sem) {
 int cwait (csem_t *sem) {
   printf("\n\n[ CWAIT ]\n");
   
-  printf("-> count: %i\n", sem->count);
   sem->count--;
+  
   printf("-> count: %i\n", sem->count);
   
   // se sem está livre:
   if (sem->count >= 0) {
     // tem que fazer algo mais aqui?
-    printf("-> livre!\n");
+    printf("-> estava livre, agora está ocupado\n");
     return SUCCESS;
   }
   
   // se sem está ocupado:
   else {
-    printf("-> tem gente!\n");
+    printf("-> tem gente\n");
     
     if (sem->fila == NULL) {
       return ERROR;
